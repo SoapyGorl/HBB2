@@ -40,6 +40,7 @@ def percent_to_rgba(rgba: list[int, int, int, int] | tuple[int, int, int, int]):
 
 
 COLORS = {
+    'NOTHING': rgba_to_glsl((0, 0, 0, 0)),
     'DEFAULT': rgba_to_glsl((0, 0, 0, 255)),
     'BLACK': rgba_to_glsl((0, 0, 0, 255)),
     'WHITE': rgba_to_glsl((255, 255, 255, 255)),
@@ -50,7 +51,7 @@ COLORS = {
     'PINK': rgba_to_glsl((215, 123, 186, 255)),
     'LIGHT_YELLOW': rgba_to_glsl((251, 242, 128, 200)),
     'YELLOW': rgba_to_glsl((255, 255, 0, 255)),
-    'GREY': rgba_to_glsl((175, 175, 175, 255))
+    'GREY': rgba_to_glsl((175, 175, 175, 255)),
     }
 
 
@@ -83,8 +84,9 @@ LOADED_IN_EDITOR = 'LOADED_IN_EDITOR'
 IMAGE_PATHS = {# key: [Bool, path, draw_function_key]; 'always' to not unload image
          # blank images
          ' ': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\blanks\\blank_character.png'],
-         # black pixel
+         # pixels
          'black_pixel': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\pixels\\black_pixel.png'],
+         'blank_pixel': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\pixels\\blank_pixel.png'],
          # lower case letters
          'a': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\lower_case\\a.png'],
          'b': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\lower_case\\b.png'],

@@ -61,6 +61,7 @@ class RenderObjects():
     def get_programs(self, gl_context):
         self.programs['basic_rect'] = DrawBasicRect(gl_context)
         self.programs['rotation_rect'] = DrawRotationRect(gl_context)
+        self.programs['basic_image_with_color'] = DrawImageWithColor(gl_context)
         self.programs['basic_rect_with_color'] = DrawBasicRectWithVariableColor(gl_context)
         self.programs['basic_rect_glow'] = DrawBasicRectGlow(gl_context)
         self.programs['basic_rect_circle_glow'] = DrawBasicRectCircleGlow(gl_context)
@@ -68,6 +69,7 @@ class RenderObjects():
         self.programs['RGBA_picker'] = DrawRGBAPicker(gl_context)
         self.programs['spectrum_x'] = DrawSpectrumX(gl_context)
         self.programs['checkerboard'] = DrawCheckerboard(gl_context)
+        self.programs['text'] = DrawText(gl_context)
     #
     def add_moderngl_texture_to_renderable_objects_dict(self, Screen: ScreenObject, gl_context, path, name):
         pygame_image = pygame.image.load(path).convert_alpha()
@@ -111,6 +113,26 @@ class RenderObjects():
         program['offset_x'] = (topleft_x + topright_x) / 2
         program['offset_y'] = (topleft_y + bottomleft_y) / 2
         program['aspect'] = Screen.aspect
+        quads = gl_context.buffer(data=array('f', [topleft_x, topleft_y, 0.0, 0.0, topright_x, topleft_y, 1.0, 0.0, topleft_x, bottomleft_y, 0.0, 1.0, topright_x, bottomleft_y, 1.0, 1.0,]))
+        renderer = gl_context.vertex_array(program, [(quads, '2f 2f', 'vert', 'texcoord')])
+        renderable_object.TEXTURE.use(0)
+        renderer.render(mode=moderngl.TRIANGLE_STRIP)
+        quads.release()
+        renderer.release()
+    #
+    def basic_rect_ltwh_image_with_color(self, Screen: ScreenObject, gl_context, object_name, ltwh, rgba):
+        # 'basic_image_with_color', DrawImageWithColor
+        program = self.programs['basic_image_with_color'].program
+        renderable_object = self.renderable_objects[object_name]
+        topleft_x = (-1.0 + ((2 * ltwh[0]) / Screen.width)) * Screen.aspect
+        topleft_y = 1.0 - ((2 * ltwh[1]) / Screen.height)
+        topright_x = topleft_x + ((2 * ltwh[2] * Screen.aspect) / Screen.width)
+        bottomleft_y = topleft_y - ((2 * ltwh[3]) / Screen.height)
+        program['aspect'] = Screen.aspect
+        program['red'] = rgba[0]
+        program['green'] = rgba[1]
+        program['blue'] = rgba[2]
+        program['alpha'] = rgba[3]
         quads = gl_context.buffer(data=array('f', [topleft_x, topleft_y, 0.0, 0.0, topright_x, topleft_y, 1.0, 0.0, topleft_x, bottomleft_y, 0.0, 1.0, topright_x, bottomleft_y, 1.0, 1.0,]))
         renderer = gl_context.vertex_array(program, [(quads, '2f 2f', 'vert', 'texcoord')])
         renderable_object.TEXTURE.use(0)
@@ -275,20 +297,37 @@ class RenderObjects():
         renderer.release()
     #
     def draw_string_of_characters(self, Screen: ScreenObject, gl_context, string, lt, text_pixel_size, rgba):
+        # 'text', DrawText
         ltwh = [lt[0], lt[1], 0, get_text_height(text_pixel_size)]
         for character in string:
             ltwh[2] = get_text_width(self, character, text_pixel_size)
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, character, ltwh, rgba)
+            program = self.programs['text'].program
+            renderable_object = self.renderable_objects[character]
+            topleft_x = (-1.0 + ((2 * ltwh[0]) / Screen.width)) * Screen.aspect
+            topleft_y = 1.0 - ((2 * ltwh[1]) / Screen.height)
+            topright_x = topleft_x + ((2 * ltwh[2] * Screen.aspect) / Screen.width)
+            bottomleft_y = topleft_y - ((2 * ltwh[3]) / Screen.height)
+            program['aspect'] = Screen.aspect
+            program['red'] = rgba[0]
+            program['green'] = rgba[1]
+            program['blue'] = rgba[2]
+            program['alpha'] = rgba[3]
+            quads = gl_context.buffer(data=array('f', [topleft_x, topleft_y, 0.0, 0.0, topright_x, topleft_y, 1.0, 0.0, topleft_x, bottomleft_y, 0.0, 1.0, topright_x, bottomleft_y, 1.0, 1.0,]))
+            renderer = gl_context.vertex_array(program, [(quads, '2f 2f', 'vert', 'texcoord')])
+            renderable_object.TEXTURE.use(0)
+            renderer.render(mode=moderngl.TRIANGLE_STRIP)
+            quads.release()
+            renderer.release()
             ltwh[0] += ltwh[2] + text_pixel_size
     #
     def draw_rectangle(self, Screen: ScreenObject, gl_context, ltwh, border_thickness, border_color, coloring_border, inner_color, coloring_inside): # rectangle with border
         if coloring_border:
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', (ltwh[0], ltwh[1], ltwh[2], border_thickness), border_color)
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', (ltwh[0], ltwh[1] + border_thickness, border_thickness, ltwh[3] - border_thickness), border_color)
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', (ltwh[0] + ltwh[2] - border_thickness, ltwh[1] + border_thickness, border_thickness, ltwh[3] - border_thickness), border_color)
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', (ltwh[0] + border_thickness, ltwh[1] + ltwh[3] - border_thickness, ltwh[2] - (2 * border_thickness), border_thickness), border_color)
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0], ltwh[1], ltwh[2], border_thickness), border_color)
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0], ltwh[1] + border_thickness, border_thickness, ltwh[3] - border_thickness), border_color)
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0] + ltwh[2] - border_thickness, ltwh[1] + border_thickness, border_thickness, ltwh[3] - border_thickness), border_color)
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0] + border_thickness, ltwh[1] + ltwh[3] - border_thickness, ltwh[2] - (2 * border_thickness), border_thickness), border_color)
         if coloring_inside:
-            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', (ltwh[0] + border_thickness, ltwh[1] + border_thickness, ltwh[2] - (2 * border_thickness), ltwh[3] - (2 * border_thickness)), inner_color)
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0] + border_thickness, ltwh[1] + border_thickness, ltwh[2] - (2 * border_thickness), ltwh[3] - (2 * border_thickness)), inner_color)
     #
     @staticmethod
     def clear_buffer(gl_context):
@@ -369,6 +408,92 @@ class DrawRotationRect():
 
 
 class DrawBasicRectWithVariableColor():
+    def __init__(self, gl_context):
+        self.VERTICE_SHADER = '''
+        #version 330 core
+
+        uniform float aspect;
+
+        in vec2 vert;
+        in vec2 texcoord;
+        out vec2 uvs;
+
+        void main() {
+            uvs = texcoord;
+            gl_Position = vec4(
+            vert.x / aspect, 
+            vert.y, 0.0, 1.0
+            );
+        }
+        '''
+        self.FRAGMENT_SHADER = '''
+        #version 330 core
+
+        uniform sampler2D tex;
+        uniform float red;
+        uniform float green;
+        uniform float blue;
+        uniform float alpha;
+
+        in vec2 uvs;
+        out vec4 f_color;
+
+        void main() {
+            f_color = vec4(
+            texture(tex, uvs).r + red, 
+            texture(tex, uvs).g + green, 
+            texture(tex, uvs).b + blue, 
+            texture(tex, uvs).a + alpha
+            );
+        }
+        '''
+        self.program = gl_context.program(vertex_shader = self.VERTICE_SHADER, fragment_shader = self.FRAGMENT_SHADER)
+
+
+class DrawImageWithColor():
+    def __init__(self, gl_context):
+        self.VERTICE_SHADER = '''
+        #version 330 core
+
+        uniform float aspect;
+
+        in vec2 vert;
+        in vec2 texcoord;
+        out vec2 uvs;
+
+        void main() {
+            uvs = texcoord;
+            gl_Position = vec4(
+            vert.x / aspect, 
+            vert.y, 0.0, 1.0
+            );
+        }
+        '''
+        self.FRAGMENT_SHADER = '''
+        #version 330 core
+
+        uniform sampler2D tex;
+        uniform float red;
+        uniform float green;
+        uniform float blue;
+        uniform float alpha;
+
+        in vec2 uvs;
+        out vec4 f_color;
+
+        void main() {
+            f_color = vec4(
+            texture(tex, uvs).r + red, 
+            texture(tex, uvs).g + green, 
+            texture(tex, uvs).b + blue, 
+            texture(tex, uvs).a * alpha
+            );
+        }
+        '''
+        self.program = gl_context.program(vertex_shader = self.VERTICE_SHADER, fragment_shader = self.FRAGMENT_SHADER)
+
+
+class DrawText():
     def __init__(self, gl_context):
         self.VERTICE_SHADER = '''
         #version 330 core

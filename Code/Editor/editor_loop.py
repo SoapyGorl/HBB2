@@ -47,7 +47,7 @@ class EditorSingleton():
         self.palette_background_color = COLORS['GREY']
         self.palette_colors_border_color = COLORS['BLACK']
         self.palette_scroll_background_color = COLORS['BLACK']
-        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE']]
+        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY'], rgba_to_glsl((0, 0, 0, 0)), rgba_to_glsl((64, 64, 64, 0)), rgba_to_glsl((128, 128, 128, 0)), rgba_to_glsl((192, 192, 192, 0)), rgba_to_glsl((0, 255, 255, 128))]
         self.palette_colors_per_row = 5
         self.palette_padding = 5
         self.palette_color_wh = [35, 35]
@@ -78,6 +78,8 @@ class EditorSingleton():
         self.add_color_words_lt = [math.floor(self.add_color_words_background_ltwh[0] + (self.add_color_words_background_ltwh[2] / 2) - (self.add_color_words_length / 2)), self.add_color_words_background_ltwh[1] + self.add_color_words_border_thickness + self.add_color_words_padding]
         self.remove_color_words_lt = [math.floor(self.add_color_words_background_ltwh[0] + (self.add_color_words_background_ltwh[2] / 2) - (self.remove_color_words_length / 2)), self.add_color_words_background_ltwh[1] + self.add_color_words_border_thickness + self.add_color_words_padding]
         self.gap_between_add_or_remove_color_and_spectrum = 4
+        self.add_or_remove_checkerboard_ltwh = [self.add_color_words_background_ltwh[0] + self.add_color_words_border_thickness, self.add_color_words_background_ltwh[1] + self.add_color_words_border_thickness, self.add_color_words_background_ltwh[2] - (2 * self.add_color_words_border_thickness), self.add_color_words_background_ltwh[3] - (2 * self.add_color_words_border_thickness)]
+        self.add_or_remove_checkerboard_repeat = 32
         # spectrum
         self.add_color_background_color = COLORS['PINK']
         self.add_color_spectrum_border_color = COLORS['BLACK']
@@ -121,6 +123,12 @@ class EditorSingleton():
             self.tool_bar_tools_dict[tool_name] = [[0, self.header_bottom + (Render.renderable_objects[tool_name].ORIGINAL_HEIGHT * tool_name_index) + (self.tool_bar_padding * (tool_name_index + 1)), Render.renderable_objects[tool_name].ORIGINAL_WIDTH, Render.renderable_objects[tool_name].ORIGINAL_HEIGHT], # ltwh
                                                    True if tool_name == 'Hand' else False # selected
                                                    ]
+    def get_color_spectrum_ltwh(self):
+        return [self.palette_padding + self.add_color_spectrum_border_thickness, 
+                self.separate_palette_and_add_color_ltwh[1] + self.add_color_words_background_ltwh[3] + self.gap_between_add_or_remove_color_and_spectrum + self.separate_palette_and_add_color_ltwh[3] + self.palette_padding + self.add_color_spectrum_border_thickness, 
+                self.palette_ltwh[2] - (2 * self.palette_padding) - (2 * self.add_color_spectrum_border_thickness), 
+                self.add_color_spectrum_height - (2 * self.add_color_spectrum_border_thickness)]
+
 
 
 class CurrentlySelectedColor():
@@ -139,12 +147,15 @@ class CurrentlySelectedColor():
         self.selected_through_palette = True
         #
         # palette selection properties
-        self.outline1_color = COLORS['LIGHT_YELLOW']
+        self.outline1_color = COLORS['YELLOW']
         self.outline1_thickness = 2
         self.outline1_ltwh = [0, 0, base_box_size + (2 * self.outline1_thickness), base_box_size + (2 * self.outline1_thickness)]
         self.outline2_color = COLORS['BLACK']
         self.outline2_thickness = 4
         self.outline2_ltwh = [0, 0, base_box_size + (2 * self.outline2_thickness), base_box_size + (2 * self.outline2_thickness)]
+        self.checker_pattern_repeat = 5
+        self.checker_color1 = COLORS['GREY']
+        self.checker_color2 = COLORS['WHITE']
         #
         # spectrum selection properties
         self.red = 0.0
@@ -293,26 +304,53 @@ class CurrentlySelectedColor():
                 self.update_color()
                 return
 
+    def rgb_to_hsl(self, rgb: list[float]):
+        max_color = max([rgb[0], rgb[1], rgb[2]])
+        min_color = min([rgb[0], rgb[1], rgb[2]])
+        luminance = (max_color + min_color) / 2
+        chroma = max_color - min_color
+        if chroma == 0:
+            luminance = 1 - luminance
+            hue = 0
+            saturation = 0
+        else:
+            saturation = chroma / (1 - abs(2 * luminance - 1))
+            # red is biggest
+            if (rgb[0] >= rgb[1]) and (rgb[0] >= rgb[2]): # red is biggest
+                hue = (((rgb[1] - rgb[2]) / chroma) % 6) / 6
+            # green is biggest
+            if (rgb[1] >= rgb[0]) and (rgb[1] >= rgb[2]):
+                hue = ((rgb[2] - rgb[0]) / chroma + 2) / 6
+            # blue is biggest
+            if (rgb[2] >= rgb[0]) and (rgb[2] >= rgb[1]):
+                hue = ((rgb[0] - rgb[1]) / chroma + 4) / 6
+        hue = move_number_to_desired_range(0, hue, 1)
+        saturation = move_number_to_desired_range(0, saturation, 1)
+        luminance = move_number_to_desired_range(0, luminance, 1)
+        return [hue, saturation, luminance]
 
 
 def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
     #
     # draw add color background
     Singleton.add_color_ltwh[1] = Singleton.footer_ltwh[1] - Singleton.add_color_ltwh[3]
-    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'black_pixel', Singleton.add_color_ltwh, Singleton.add_color_background_color)
+    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.add_color_ltwh, Singleton.add_color_background_color)
     #
     # add/remove color button
     Singleton.add_color_words_background_ltwh[1] = Singleton.separate_palette_and_add_color_ltwh[1] + Singleton.separate_palette_and_add_color_ltwh[3] + Singleton.palette_padding
+    if Singleton.currently_selected_color.color[3] < 1:
+        Singleton.add_or_remove_checkerboard_ltwh[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness
+        Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_or_remove_checkerboard_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.add_or_remove_checkerboard_repeat, Singleton.add_or_remove_checkerboard_repeat)
     Render.draw_rectangle(Screen, gl_context, Singleton.add_color_words_background_ltwh, Singleton.add_color_words_border_thickness, Singleton.add_color_words_border_color, True, Singleton.currently_selected_color.color, True)
     if not Singleton.currently_selected_color.selected_through_palette:
         Singleton.add_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
-        Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color)
+        Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
     if Singleton.currently_selected_color.selected_through_palette:
         Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
-        Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color)
+        Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
     #
     # RGBA spectrum
-    color_spectrum_ltwh = [Singleton.palette_padding + Singleton.add_color_spectrum_border_thickness, Singleton.separate_palette_and_add_color_ltwh[1] + Singleton.add_color_words_background_ltwh[3] + Singleton.gap_between_add_or_remove_color_and_spectrum + Singleton.separate_palette_and_add_color_ltwh[3] + Singleton.palette_padding + Singleton.add_color_spectrum_border_thickness, Singleton.palette_ltwh[2] - (2 * Singleton.palette_padding) - (2 * Singleton.add_color_spectrum_border_thickness), Singleton.add_color_spectrum_height - (2 * Singleton.add_color_spectrum_border_thickness)]
+    color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
     Render.rgba_picker(Screen, gl_context, 'black_pixel', color_spectrum_ltwh, Singleton.currently_selected_color.saturation)
     mouse_is_in_spectrum = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_spectrum_ltwh)
     if mouse_is_in_spectrum and Keys.editor_primary.newly_pressed:
@@ -331,7 +369,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             Singleton.add_color_circle_is_held = False
     Singleton.add_color_circle_ltwh[0] = color_spectrum_ltwh[0] + Singleton.add_color_circle_center_relative_xy[0] - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
     Singleton.add_color_circle_ltwh[1] = color_spectrum_ltwh[1] + Singleton.add_color_circle_center_relative_xy[1] - (Render.renderable_objects['editor_circle'].ORIGINAL_HEIGHT // 2)
-    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'editor_circle', Singleton.add_color_circle_ltwh, Singleton.add_color_current_circle_color)
+    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_circle_ltwh, Singleton.add_color_current_circle_color)
     #
     # RGBA saturation
     Singleton.add_color_saturation_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3]
@@ -350,7 +388,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             Singleton.add_color_saturation_circle_is_held = False
     Singleton.add_color_saturation_circle_ltwh[0] = Singleton.add_color_saturation_ltwh[0] + Singleton.add_color_saturation_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
     Singleton.add_color_saturation_circle_ltwh[1] = Singleton.add_color_saturation_ltwh[1] + (Singleton.add_color_saturation_ltwh[3] // 2) - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'editor_circle', Singleton.add_color_saturation_circle_ltwh, Singleton.add_color_current_circle_color)
+    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_saturation_circle_ltwh, Singleton.add_color_current_circle_color)
     #
     # RGBA alpha
     Singleton.add_color_alpha_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3] + Singleton.add_color_saturation_ltwh[3]
@@ -370,7 +408,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             Singleton.add_color_alpha_circle_is_held = False
     Singleton.add_color_alpha_circle_ltwh[0] = Singleton.add_color_alpha_ltwh[0] + Singleton.add_color_alpha_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
     Singleton.add_color_alpha_circle_ltwh[1] = Singleton.add_color_alpha_ltwh[1] + (Singleton.add_color_alpha_ltwh[3] // 2) - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'editor_circle', Singleton.add_color_alpha_circle_ltwh, Singleton.add_color_current_circle_color)
+    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_alpha_circle_ltwh, Singleton.add_color_current_circle_color)
     #
     # RBGA spectrum border
     Render.draw_rectangle(Screen, gl_context, [color_spectrum_ltwh[0] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[1] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[2] + (2 * Singleton.add_color_spectrum_border_thickness), color_spectrum_ltwh[3] + (2 * Singleton.add_color_spectrum_border_thickness) + Singleton.add_color_saturation_ltwh[3] + Singleton.add_color_alpha_ltwh[3]], Singleton.add_color_spectrum_border_thickness, Singleton.add_color_spectrum_border_color, True, COLORS['DEFAULT'], False)
