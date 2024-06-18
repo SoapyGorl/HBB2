@@ -1,6 +1,7 @@
 import math
 from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range
 from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_palette
+from Code.Editor.editor_utilities import DynamicInput
 
 
 class EditorSingleton():
@@ -66,6 +67,7 @@ class EditorSingleton():
         self.footer_ltwh = [0, 0, 0, self.header_height]
         #
         # add color
+        # add/remove color
         self.add_color_words_border_color = COLORS['BLACK']
         self.add_color_words_text_pixel_size = 3
         self.add_color_words_border_thickness = 5
@@ -106,7 +108,28 @@ class EditorSingleton():
         self.add_color_alpha_checker_y = 7
         self.add_color_alpha_checker_color1 = COLORS['GREY']
         self.add_color_alpha_checker_color2 = COLORS['WHITE']
-        self.add_color_ltwh = [0, 0, self.palette_ltwh[2], (2 * self.palette_padding) + self.add_color_words_background_ltwh[3] + self.gap_between_add_or_remove_color_and_spectrum + self.add_color_spectrum_height + self.add_color_saturation_ltwh[3] + self.add_color_alpha_ltwh[3]]
+        # rgba input
+        self.add_color_input_inputs_and_equals_color = COLORS['BLACK']
+        self.add_color_input_background_color = COLORS['LIGHT_GREY']
+        self.add_color_input_space_between_inputs = 12
+        self.add_color_input_text_pixel_size = 3
+        self.add_color_input_single_input_height = self.add_color_input_space_between_inputs + get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size)
+        self.add_color_inputs = ['R', 'G', 'B', 'A']
+        self.add_color_input_equals_symbol = '='
+        self.add_color_input_max_length = 0
+        for character in self.add_color_inputs:
+            if get_text_width(Render, f'{character} {self.add_color_input_equals_symbol}', self.add_color_input_text_pixel_size) > self.add_color_input_max_length:
+                self.add_color_input_max_length = get_text_width(Render, character, self.add_color_input_text_pixel_size)
+        self.add_color_input_top = self.add_color_spectrum_ltwh[1] + self.add_color_spectrum_ltwh[3]
+        self.add_color_input_color_equals_input_left = [self.palette_padding, self.palette_padding + self.add_color_input_max_length + get_text_width(Render, ' ', self.add_color_input_text_pixel_size), self.palette_padding + self.add_color_input_max_length + get_text_width(Render, ' = ', self.add_color_input_text_pixel_size)]
+        self.add_color_input_height = (self.add_color_input_space_between_inputs * 5) + (4 * (get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size)))
+        
+        self.add_color_dynamic_inputs = [DynamicInput('0123456789', [self.add_color_input_color_equals_input_left[2], 0, 50, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (4)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_text_pixel_size),
+                                         DynamicInput('0123456789', [self.add_color_input_color_equals_input_left[2], 0, 50, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (4)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_text_pixel_size),
+                                         DynamicInput('0123456789', [self.add_color_input_color_equals_input_left[2], 0, 50, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (4)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_text_pixel_size),
+                                         DynamicInput('0123456789', [self.add_color_input_color_equals_input_left[2], 0, 50, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (4)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_text_pixel_size),]
+        
+        self.add_color_ltwh = [0, 0, self.palette_ltwh[2], (2 * self.palette_padding) + self.add_color_words_background_ltwh[3] + self.gap_between_add_or_remove_color_and_spectrum + self.add_color_spectrum_height + self.add_color_saturation_ltwh[3] + self.add_color_alpha_ltwh[3] + self.add_color_input_height - self.palette_padding]
         #
         # tool bar
         self.tool_bar_color = COLORS['RED']
@@ -411,7 +434,18 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_alpha_circle_ltwh, Singleton.add_color_current_circle_color)
     #
     # RBGA spectrum border
-    Render.draw_rectangle(Screen, gl_context, [color_spectrum_ltwh[0] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[1] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[2] + (2 * Singleton.add_color_spectrum_border_thickness), color_spectrum_ltwh[3] + (2 * Singleton.add_color_spectrum_border_thickness) + Singleton.add_color_saturation_ltwh[3] + Singleton.add_color_alpha_ltwh[3]], Singleton.add_color_spectrum_border_thickness, Singleton.add_color_spectrum_border_color, True, COLORS['DEFAULT'], False)
+    spectrum_border_ltwh = [color_spectrum_ltwh[0] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[1] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[2] + (2 * Singleton.add_color_spectrum_border_thickness), color_spectrum_ltwh[3] + (2 * Singleton.add_color_spectrum_border_thickness) + Singleton.add_color_saturation_ltwh[3] + Singleton.add_color_alpha_ltwh[3]]
+    Render.draw_rectangle(Screen, gl_context, spectrum_border_ltwh, Singleton.add_color_spectrum_border_thickness, Singleton.add_color_spectrum_border_color, True, COLORS['DEFAULT'], False)
+    #
+    # RGBA inputs
+    Singleton.add_color_input_top = spectrum_border_ltwh[1] + spectrum_border_ltwh[3]
+    current_character_top = Singleton.add_color_input_top + Singleton.add_color_input_space_between_inputs
+    for index, input_character in enumerate(Singleton.add_color_inputs):
+        Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
+        Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
+        Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
+        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render)
+        current_character_top += Singleton.add_color_input_single_input_height
 
 
 def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
