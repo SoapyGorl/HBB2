@@ -1,9 +1,14 @@
 import math
 from __main__ import PATH
 import pygame
+import time
 
 
 OFF_SCREEN = -99999
+
+
+def get_time():
+    return time.time_ns() / 1000000000
 
 
 def point_is_in_ltwh(px: (float | int), py: (float | int), ltwh: list[(float | int), (float | int), (float | int), (float | int)]):
