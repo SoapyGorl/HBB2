@@ -231,6 +231,7 @@ class KeysClass():
     #
     def keyboard_key_to_character(self):
         if self.keys[pygame.K_BACKSPACE]: return 'BACKSPACE'
+        if self.keys[pygame.K_RETURN]: return 'RETURN'
         if not self.keys[pygame.K_LSHIFT] and not self.keys[pygame.K_RSHIFT]:
             if self.keys[pygame.K_0]: return '0'
             if self.keys[pygame.K_1]: return '1'

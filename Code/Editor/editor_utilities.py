@@ -27,9 +27,9 @@ class DynamicInput():
         self.must_fit = must_fit
         self.default_value = default_value
         if self.is_a_float:
-            self.allowable_keys = ['BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
+            self.allowable_keys = ['RETURN', 'BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
         if self.is_an_int:
-            self.allowable_keys = ['BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+            self.allowable_keys = ['RETURN', 'BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         #
         self.blinking_cycle_duration = 1.15 # whole blinking cycle
         self.fast_time = 0.05 # time before moving left/right again when holding down an arrow key
@@ -189,6 +189,10 @@ class DynamicInput():
         if not editing_this_frame:
             return
 
+        if current_key == 'RETURN':
+            self.deselect_box()
+            return
+
         if current_key == 'BACKSPACE':
             if self.selected_index == 0:
                 self.last_edit_time = get_time()
@@ -214,5 +218,5 @@ class DynamicInput():
         text_width = get_text_width(render_instance, string, self.text_pixel_size)
         return text_width <= background_ltwh[2] - (2 * self.text_padding)
 
-# up, down, tab, shift tab, delete, enter
+# up, down, tab, shift tab, delete
 # control a, c, v, z
