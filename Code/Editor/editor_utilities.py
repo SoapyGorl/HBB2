@@ -27,9 +27,9 @@ class DynamicInput():
         self.must_fit = must_fit
         self.default_value = default_value
         if self.is_a_float:
-            self.allowable_keys = ['RETURN', 'BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
+            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
         if self.is_an_int:
-            self.allowable_keys = ['RETURN', 'BACKSPACE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         #
         self.blinking_cycle_duration = 1.15 # whole blinking cycle
         self.fast_time = 0.05 # time before moving left/right again when holding down an arrow key
@@ -111,7 +111,13 @@ class DynamicInput():
             if keys_class_instance.editor_left.pressed or keys_class_instance.editor_right.pressed:
                 self.update_arrow_key_index(keys_class_instance)
                 return background_ltwh
-            self.update_with_typed_key(render_instance, keys_class_instance, background_ltwh)
+
+            string_before_edit = self.current_string
+            index_before_edit = self.selected_index
+            self.update_with_typed_key(keys_class_instance)
+            if not self.fits(render_instance, background_ltwh, self.current_string):
+                self.current_string = string_before_edit
+                self.selected_index = index_before_edit
             return background_ltwh
     #
     def get_typed_key(self, keys_class_instance):
@@ -171,8 +177,7 @@ class DynamicInput():
         self.selected_index = new_value
         self.selected_index = move_number_to_desired_range(0, self.selected_index, len(self.current_string))
     #
-    def update_with_typed_key(self, render_instance, keys_class_instance, background_ltwh):
-        string_before_edit = self.current_string
+    def update_with_typed_key(self, keys_class_instance):
         current_key = self.get_typed_key(keys_class_instance)
         if current_key is None:
             self.last_key = ''
@@ -189,28 +194,69 @@ class DynamicInput():
         if not editing_this_frame:
             return
 
-        if current_key == 'RETURN':
-            self.deselect_box()
-            return
-
-        if current_key == 'BACKSPACE':
-            if self.selected_index == 0:
-                self.last_edit_time = get_time()
-                self.new_selected_index(0)
+        match current_key:
+            case 'RETURN':
+                self.deselect_box()
                 return
-            else:
-                self.last_edit_time = get_time()
-                self.new_selected_index(self.selected_index - 1)
-                self.current_string = self.current_string[:self.selected_index] + self.current_string[self.selected_index + 1:]
+            
+            case 'DELETE':
+                if self.selected_index == len(self.current_string):
+                    self.last_edit_time = get_time()
+                    self.new_selected_index(len(self.current_string))
+                else:
+                    self.last_edit_time = get_time()
+                    self.new_selected_index(self.selected_index)
+                    self.current_string = self.current_string[:self.selected_index] + self.current_string[self.selected_index + 1:]
+
+            case 'BACKSPACE':
+                if self.selected_index == 0:
+                    self.last_edit_time = get_time()
+                    self.new_selected_index(0)
+                    return
+                else:
+                    self.last_edit_time = get_time()
+                    self.new_selected_index(self.selected_index - 1)
+                    self.current_string = self.current_string[:self.selected_index] + self.current_string[self.selected_index + 1:]
+                    return
+
+            case 'UP':
+                if self.is_an_int:
+                    if not self.current_value_is_int():
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) + 1, self.allowable_range[1]))
+                    self.new_selected_index(len(self.current_string))
+                    return
+                if self.is_a_float:
+                    if not self.current_value_is_float():
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) + 1, self.allowable_range[1]))
+                    self.new_selected_index(len(self.current_string))
+                    return
                 return
 
-        if len(current_key) == 1:
-            self.last_edit_time = get_time()
-            potential_new_string = self.current_string[:self.selected_index] + current_key + self.current_string[self.selected_index:]
-            if self.fits(render_instance, background_ltwh, potential_new_string):
-                self.current_string = potential_new_string
+            case 'DOWN':
+                if self.is_an_int:
+                    if not self.current_value_is_int():
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) - 1, self.allowable_range[1]))
+                    self.new_selected_index(len(self.current_string))
+                if self.is_a_float:
+                    if not self.current_value_is_float():
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) - 1, self.allowable_range[1]))
+                    self.new_selected_index(len(self.current_string))
+                    return
+                return
+            
+            case _:
+                self.last_edit_time = get_time()
+                self.current_string = self.current_string[:self.selected_index] + current_key + self.current_string[self.selected_index:]
                 self.new_selected_index(self.selected_index + 1)
-            return
+                return
     #
     def fits(self, render_instance, background_ltwh, string):
         if not self.must_fit:
@@ -218,5 +264,6 @@ class DynamicInput():
         text_width = get_text_width(render_instance, string, self.text_pixel_size)
         return text_width <= background_ltwh[2] - (2 * self.text_padding)
 
-# up, down, tab, shift tab, delete
+# tab, shift tab
 # control a, c, v, z
+# highlighting

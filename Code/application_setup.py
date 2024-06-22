@@ -230,8 +230,16 @@ class KeysClass():
             control.update(control.mapping())
     #
     def keyboard_key_to_character(self):
+        if self.keys[pygame.K_UP]: return 'UP'
+        if self.keys[pygame.K_DOWN]: return 'DOWN'
+        if self.keys[pygame.K_DELETE]: return 'DELETE'
         if self.keys[pygame.K_BACKSPACE]: return 'BACKSPACE'
         if self.keys[pygame.K_RETURN]: return 'RETURN'
+        if self.keys[pygame.K_LCTRL] or self.keys[pygame.K_RCTRL]:
+            if self.keys[pygame.K_a]: return 'CTRL_A'
+            if self.keys[pygame.K_c]: return 'CTRL_C'
+            if self.keys[pygame.K_v]: return 'CTRL_V'
+            if self.keys[pygame.K_z]: return 'CTRL_Z'
         if not self.keys[pygame.K_LSHIFT] and not self.keys[pygame.K_RSHIFT]:
             if self.keys[pygame.K_0]: return '0'
             if self.keys[pygame.K_1]: return '1'

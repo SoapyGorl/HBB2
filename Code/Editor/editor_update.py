@@ -34,16 +34,17 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
     #
     # selected header options
     if Singleton.header_selected:
-        if 'File' == Singleton.header_string_selected:
-            pass
-        if 'Edit' == Singleton.header_string_selected:
-            pass
-        if 'Options' == Singleton.header_string_selected:
-            pass
-        if 'Objects' == Singleton.header_string_selected:
-            pass
-        if 'Blocks' == Singleton.header_string_selected:
-            pass
+        match Singleton.header_string_selected:
+            case 'File':
+                pass
+            case 'Edit':
+                pass
+            case 'Options':
+                pass
+            case 'Objects':
+                pass
+            case 'Blocks':
+                pass
     #
     # header border
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (0, Singleton.header_height, Screen.width, Singleton.header_border_thickness), Singleton.header_border_color)
