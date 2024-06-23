@@ -1,13 +1,14 @@
-from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_time
-import time
+from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_text_height, get_time, str_can_be_int, str_can_be_float
 import math
 
 
-class DynamicInput():
+class TextInput():
     def __init__(self, 
                  background_ltwh: list[int], 
                  background_color: list[float], 
                  text_color: list[float], 
+                 highlighted_text_color: list[float],
+                 highlight_color: list[float],
                  text_pixel_size: int, 
                  text_padding: int, 
                  allowable_range: list[float | int, float | int] = [-math.inf, math.inf], 
@@ -19,6 +20,8 @@ class DynamicInput():
         self.background_ltwh = background_ltwh
         self.background_color = background_color
         self.text_color = text_color
+        self.highlighted_text_color = highlighted_text_color
+        self.highlight_color = highlight_color
         self.text_pixel_size = text_pixel_size
         self.text_padding = text_padding
         self.allowable_range = allowable_range
@@ -27,10 +30,12 @@ class DynamicInput():
         self.must_fit = must_fit
         self.default_value = default_value
         if self.is_a_float:
-            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
+            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', 'CTRL_A', 'CTRL_C', 'CTRL_V', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
         if self.is_an_int:
-            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', 'CTRL_A', 'CTRL_C', 'CTRL_V', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
         #
+        self.text_height = get_text_height(self.text_pixel_size) - (2 * self.text_pixel_size)
+        self.highlighted_index_range = [2, 5]
         self.blinking_cycle_duration = 1.15 # whole blinking cycle
         self.fast_time = 0.05 # time before moving left/right again when holding down an arrow key
         self.time_before_fast = 0.5
@@ -41,6 +46,7 @@ class DynamicInput():
         self.blinking_line_time = get_time()
         self.blinking_line_wh = [self.text_pixel_size, background_ltwh[3] - 2]
         self.currently_selected = False
+        self.currently_highlighting = False
         self.last_key = ''
         self.selected_index = 0
         self.current_string = '0123456789'
@@ -54,37 +60,41 @@ class DynamicInput():
             self.current_string = self.default_value
             return
         if self.is_a_float: 
-            if self.current_value_is_float():
+            if str_can_be_float(self.current_string):
                 self.current_string = str(float(move_number_to_desired_range(self.allowable_range[0], float(self.current_string), self.allowable_range[1])))
                 return
             else:
                 self.current_string = self.default_value
                 return
         if self.is_an_int:
-            if self.current_value_is_int():
+            if str_can_be_int(self.current_string):
                 self.current_string = str(round(move_number_to_desired_range(self.allowable_range[0], float(self.current_string), self.allowable_range[1])))
                 return
             else:
                 self.current_string = self.default_value
                 return
     #
-    def current_value_is_float(self):
-        try:
-            float(self.current_string)
-            return True
-        except:
-            return False
-    #
-    def current_value_is_int(self):
-        try:
-            int(self.current_string)
-            return True
-        except:
-            return False
-    #
     def update(self, screen_instance, gl_context, keys_class_instance, render_instance, offset_x: int = 0, offset_y: int = 0):
         background_ltwh = self._update(screen_instance, gl_context, keys_class_instance, render_instance, offset_x, offset_y)
-        render_instance.draw_string_of_characters(screen_instance, gl_context, self.current_string, [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)], self.text_pixel_size, self.text_color)
+        if not self.currently_selected:
+            render_instance.draw_string_of_characters(screen_instance, gl_context, self.current_string, [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)], self.text_pixel_size, self.text_color)
+        else:
+            start_left, top = [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)]
+            small_highlight_index = min(self.highlighted_index_range)
+            big_highlight_index  = max(self.highlighted_index_range)
+            if small_highlight_index != big_highlight_index:
+                string1 = self.current_string[:small_highlight_index] # not highlighted
+                string2 = self.current_string[small_highlight_index:big_highlight_index] # highlighted
+                string3 = self.current_string[big_highlight_index:] # not highlighted
+                string1_width = get_text_width(render_instance, string1, self.text_pixel_size) + self.text_pixel_size
+                string2_width = get_text_width(render_instance, string2, self.text_pixel_size) + self.text_pixel_size
+                render_instance.draw_string_of_characters(screen_instance, gl_context, string1, [start_left, top], self.text_pixel_size, self.text_color)
+                render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'black_pixel', [start_left+string1_width-1, background_ltwh[1] + self.text_padding - 1, string2_width-self.text_pixel_size+2, self.text_height + 2], self.highlight_color)
+                render_instance.draw_string_of_characters(screen_instance, gl_context, string2, [start_left+string1_width, top], self.text_pixel_size, self.highlighted_text_color)
+                render_instance.draw_string_of_characters(screen_instance, gl_context, string3, [start_left+string1_width+string2_width, top], self.text_pixel_size, self.text_color)
+            if small_highlight_index == big_highlight_index:
+                render_instance.draw_string_of_characters(screen_instance, gl_context, self.current_string, [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)], self.text_pixel_size, self.text_color)
+            self.draw_blinking_line(screen_instance, gl_context, render_instance, background_ltwh)
     #
     def _update(self, screen_instance, gl_context, keys_class_instance, render_instance, offset_x: int = 0, offset_y: int = 0):
         background_ltwh = [self.background_ltwh[0] + offset_x, self.background_ltwh[1] + offset_y, self.background_ltwh[2], self.background_ltwh[3]]
@@ -96,20 +106,23 @@ class DynamicInput():
                 return background_ltwh
             if not cursor_inside_box:
                 return background_ltwh
-            self.currently_selected = True
-            self.update_clicked_index(render_instance, keys_class_instance, background_ltwh)
+            if keys_class_instance.editor_primary.newly_pressed:
+                self.currently_selected = True
+                self.initial_click(render_instance, keys_class_instance, background_ltwh)
             return background_ltwh
         # currently selected
         else:
-            self.draw_blinking_line(screen_instance, gl_context, render_instance, background_ltwh)
-            if keys_class_instance.editor_primary.pressed and not cursor_inside_box:
+            if keys_class_instance.editor_primary.newly_pressed and not cursor_inside_box:
                 self.deselect_box()
-                return background_ltwh
-            if keys_class_instance.editor_primary.newly_pressed and cursor_inside_box:
-                self.update_clicked_index(render_instance, keys_class_instance, background_ltwh)
                 return background_ltwh
             if keys_class_instance.editor_left.pressed or keys_class_instance.editor_right.pressed:
                 self.update_arrow_key_index(keys_class_instance)
+                return background_ltwh
+            if keys_class_instance.editor_primary.newly_pressed and cursor_inside_box:
+                self.initial_click(render_instance, keys_class_instance, background_ltwh)
+                return background_ltwh
+            if keys_class_instance.editor_primary.pressed and (self.highlighted_index_range[0] != -1):
+                self.released_click(render_instance, keys_class_instance, background_ltwh)
                 return background_ltwh
 
             string_before_edit = self.current_string
@@ -123,24 +136,8 @@ class DynamicInput():
     def get_typed_key(self, keys_class_instance):
         return keys_class_instance.keyboard_key_to_character()
     #
-    def update_clicked_index(self, render_instance, keys_class_instance, background_ltwh):
-        self.blinking_line_time = get_time()
-        current_left = math.floor(background_ltwh[0] + self.text_padding)
-        if keys_class_instance.cursor_x_pos.value < current_left:
-            self.new_selected_index(0)
-            return
-        for index, character in enumerate(self.current_string):
-            character_width = get_text_width(render_instance, character, self.text_pixel_size)
-            if keys_class_instance.cursor_x_pos.value <= current_left + (character_width / 2):
-                self.new_selected_index(index)
-                return
-            if current_left + (character_width / 2) < keys_class_instance.cursor_x_pos.value <= current_left + character_width:
-                self.new_selected_index(index + 1)
-                return
-            current_left += character_width + self.text_pixel_size
-        self.new_selected_index(len(self.current_string))
-    #
     def update_arrow_key_index(self, keys_class_instance):
+        self.stop_highlighting()
         if keys_class_instance.editor_left.newly_pressed:
             self.new_selected_index(self.selected_index - 1)
             self.time_when_left_or_right_was_newly_pressed = get_time()
@@ -177,6 +174,44 @@ class DynamicInput():
         self.selected_index = new_value
         self.selected_index = move_number_to_desired_range(0, self.selected_index, len(self.current_string))
     #
+    def fits(self, render_instance, background_ltwh, string):
+        if not self.must_fit:
+            return True
+        text_width = get_text_width(render_instance, string, self.text_pixel_size)
+        return text_width <= background_ltwh[2] - (2 * self.text_padding)
+    #
+    def initial_click(self, render_instance, keys_class_instance, background_ltwh):
+        self.blinking_line_time = get_time()
+        self.highlighted_index_range[0] = self.highlighted_index_range[1] = self.get_cursor_index(render_instance, keys_class_instance, background_ltwh)
+        self.new_selected_index(self.highlighted_index_range[1])
+        self.update_currently_highlighting()
+    #
+    def released_click(self, render_instance, keys_class_instance, background_ltwh):
+        self.blinking_line_time = get_time()
+        self.highlighted_index_range[1] = self.get_cursor_index(render_instance, keys_class_instance, background_ltwh)
+        self.new_selected_index(self.highlighted_index_range[1])
+        self.update_currently_highlighting()
+    #
+    def get_cursor_index(self, render_instance, keys_class_instance, background_ltwh):
+        current_left = math.floor(background_ltwh[0] + self.text_padding)
+        if keys_class_instance.cursor_x_pos.value < current_left:
+            return 0
+        for index, character in enumerate(self.current_string):
+            character_width = get_text_width(render_instance, character, self.text_pixel_size)
+            if keys_class_instance.cursor_x_pos.value <= current_left + (character_width / 2):
+                return index
+            if current_left + (character_width / 2) < keys_class_instance.cursor_x_pos.value <= current_left + character_width:
+                return index + 1
+            current_left += character_width + self.text_pixel_size
+        return len(self.current_string)
+    #
+    def update_currently_highlighting(self):
+        self.currently_highlighting = (self.highlighted_index_range[0] != self.highlighted_index_range[1]) and (self.highlighted_index_range[0] != -1) and (self.highlighted_index_range[1] != -1)
+    #
+    def stop_highlighting(self):
+        self.highlighted_index_range[0] = self.highlighted_index_range[1] = -1
+        self.currently_highlighting = False
+    #
     def update_with_typed_key(self, keys_class_instance):
         current_key = self.get_typed_key(keys_class_instance)
         if current_key is None:
@@ -200,70 +235,145 @@ class DynamicInput():
                 return
             
             case 'DELETE':
+                if self.currently_highlighting:
+                    self.last_edit_time = get_time()
+                    lower_index = min(self.highlighted_index_range)
+                    higher_index = max(self.highlighted_index_range)
+                    self.current_string = self.current_string[:lower_index] + self.current_string[higher_index:]
+                    self.new_selected_index(lower_index)
+                    self.stop_highlighting()
+                    return
                 if self.selected_index == len(self.current_string):
                     self.last_edit_time = get_time()
                     self.new_selected_index(len(self.current_string))
-                else:
+                    return
+                if self.selected_index != len(self.current_string):
                     self.last_edit_time = get_time()
                     self.new_selected_index(self.selected_index)
                     self.current_string = self.current_string[:self.selected_index] + self.current_string[self.selected_index + 1:]
+                    return
 
             case 'BACKSPACE':
+                if self.currently_highlighting:
+                    self.last_edit_time = get_time()
+                    lower_index = min(self.highlighted_index_range)
+                    higher_index = max(self.highlighted_index_range)
+                    self.current_string = self.current_string[:lower_index] + self.current_string[higher_index:]
+                    self.new_selected_index(lower_index)
+                    self.stop_highlighting()
+                    return
                 if self.selected_index == 0:
                     self.last_edit_time = get_time()
                     self.new_selected_index(0)
                     return
-                else:
+                if self.selected_index != 0:
                     self.last_edit_time = get_time()
                     self.new_selected_index(self.selected_index - 1)
                     self.current_string = self.current_string[:self.selected_index] + self.current_string[self.selected_index + 1:]
                     return
 
             case 'UP':
+                self.highlighted_index_range[0] = 0
+                self.highlighted_index_range[1] = len(self.current_string)
+                self.update_currently_highlighting()
+                self.new_selected_index(len(self.current_string))
                 if self.is_an_int:
-                    if not self.current_value_is_int():
+                    if not str_can_be_int(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) + 1, self.allowable_range[1]))
-                    self.new_selected_index(len(self.current_string))
                     return
                 if self.is_a_float:
-                    if not self.current_value_is_float():
+                    if not str_can_be_float(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) + 1, self.allowable_range[1]))
-                    self.new_selected_index(len(self.current_string))
                     return
                 return
 
             case 'DOWN':
+                self.highlighted_index_range[0] = 0
+                self.highlighted_index_range[1] = len(self.current_string)
+                self.update_currently_highlighting()
+                self.new_selected_index(len(self.current_string))
                 if self.is_an_int:
-                    if not self.current_value_is_int():
+                    if not str_can_be_int(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) - 1, self.allowable_range[1]))
                     self.new_selected_index(len(self.current_string))
                 if self.is_a_float:
-                    if not self.current_value_is_float():
+                    if not str_can_be_float(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) - 1, self.allowable_range[1]))
                     self.new_selected_index(len(self.current_string))
                     return
                 return
+
+            case 'CTRL_A':
+                self.highlighted_index_range[0] = 0
+                self.highlighted_index_range[1] = len(self.current_string)
+                self.update_currently_highlighting()
+                self.new_selected_index(len(self.current_string))
+                return
+
+            case 'CTRL_C':
+                if not self.currently_highlighting:
+                    return
+                lower_index = min(self.highlighted_index_range)
+                higher_index = max(self.highlighted_index_range)
+                keys_class_instance.copy_text(self.current_string[lower_index:higher_index])
+                return
+
+            case 'CTRL_V':
+                pasted_text = keys_class_instance.paste_text()
+                for character in pasted_text:
+                    if character not in self.allowable_keys:
+                        return
+                if not self.currently_highlighting:
+                    potential_new_text = self.current_string[:self.selected_index] + pasted_text + self.current_string[self.selected_index:]
+                if self.currently_highlighting:
+                    lower_index = min(self.highlighted_index_range)
+                    higher_index = max(self.highlighted_index_range)
+                    potential_new_text = self.current_string[:lower_index] + pasted_text + self.current_string[higher_index:]
+
+                if self.is_a_float:
+                    if not str_can_be_float(potential_new_text):
+                        return
+                    self.current_string = potential_new_text
+                    if not self.currently_highlighting:
+                        self.new_selected_index(self.selected_index + len(pasted_text))
+                    if self.currently_highlighting:
+                        self.new_selected_index(lower_index + len(pasted_text))
+                        self.stop_highlighting()
+                        return
+
+                if self.is_an_int:
+                    if not str_can_be_int(potential_new_text):
+                        return
+                    self.current_string = potential_new_text
+                    if not self.currently_highlighting:
+                        self.new_selected_index(self.selected_index + len(pasted_text))
+                    if self.currently_highlighting:
+                        self.new_selected_index(lower_index + len(pasted_text))
+                        self.stop_highlighting()
+                        return
+                return
             
             case _:
                 self.last_edit_time = get_time()
-                self.current_string = self.current_string[:self.selected_index] + current_key + self.current_string[self.selected_index:]
-                self.new_selected_index(self.selected_index + 1)
-                return
-    #
-    def fits(self, render_instance, background_ltwh, string):
-        if not self.must_fit:
-            return True
-        text_width = get_text_width(render_instance, string, self.text_pixel_size)
-        return text_width <= background_ltwh[2] - (2 * self.text_padding)
+                if self.currently_highlighting:
+                    lower_index = min(self.highlighted_index_range)
+                    higher_index = max(self.highlighted_index_range)
+                    self.current_string = self.current_string[:lower_index] + current_key + self.current_string[higher_index:]
+                    self.new_selected_index(lower_index + 1)
+                    self.stop_highlighting()
+                    return
+                if not self.currently_highlighting:
+                    self.current_string = self.current_string[:self.selected_index] + current_key + self.current_string[self.selected_index:]
+                    self.new_selected_index(self.selected_index + 1)
+                    return
 
 # tab, shift tab
-# control a, c, v, z
-# highlighting
+# shift + ->

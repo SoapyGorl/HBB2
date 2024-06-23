@@ -7,6 +7,22 @@ import time
 OFF_SCREEN = -99999
 
 
+def str_can_be_int(string):
+    try:
+        int(string)
+        return True
+    except:
+        return False
+
+
+def str_can_be_float(string):
+    try:
+        float(string)
+        return True
+    except:
+        return False
+
+
 def get_time():
     return time.time_ns() / 1000000000
 
@@ -58,7 +74,8 @@ COLORS = {
     'LIGHT_YELLOW': rgba_to_glsl((251, 242, 128, 200)),
     'YELLOW': rgba_to_glsl((255, 255, 0, 255)),
     'GREY': rgba_to_glsl((175, 175, 175, 255)),
-    'LIGHT_GREY': rgba_to_glsl((215, 215, 215, 255))
+    'LIGHT_GREY': rgba_to_glsl((215, 215, 215, 255)),
+    'ORANGE': rgba_to_glsl((255, 184, 65, 255))
     }
 
 

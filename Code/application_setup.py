@@ -1,4 +1,5 @@
 import pygame
+import pyperclip
 from Code.utilities import move_number_to_desired_range
 from Code.Editor.editor_loop import editor_loop, EditorSingleton
 from typing import Callable
@@ -210,6 +211,12 @@ class KeysClass():
             # main game
             self.primary, self.secondary, self.release_grapple, self.float_up, self.left, self.sink_down, self.right, self.select, self.interact, self.pause,
         ]
+    #
+    def copy_text(self, text: str):
+        pyperclip.copy(text)
+    #
+    def paste_text(self):
+        return pyperclip.paste()
     #
     def update_controls(self):
         self.update_io_and_analog()
