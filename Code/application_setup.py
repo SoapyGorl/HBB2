@@ -169,12 +169,9 @@ class KeysClass():
             'F11': lambda: self.keys[pygame.K_F11],
             'F12': lambda: self.keys[pygame.K_F12],
             'CAPSLOCK': lambda: self.keys[pygame.K_CAPSLOCK],
-            'RIGHT_SHIFT': lambda: self.keys[pygame.K_RSHIFT],
-            'LEFT_SHIFT': lambda: self.keys[pygame.K_LSHIFT],
-            'RIGHT_CONTROL': lambda: self.keys[pygame.K_RCTRL],
-            'LEFT_CONTROL': lambda: self.keys[pygame.K_LCTRL],
-            'RIGHT_ALT': lambda: self.keys[pygame.K_RALT],
-            'LEFT_ALT': lambda: self.keys[pygame.K_LALT],
+            'SHIFT': lambda: self.keys[pygame.K_RSHIFT] or self.keys[pygame.K_LSHIFT],
+            'CONTROL': lambda: self.keys[pygame.K_RCTRL] or self.keys[pygame.K_LCTRL],
+            'ALT': lambda: self.keys[pygame.K_RALT] or self.keys[pygame.K_LALT],
             # mouse clicks
             'LEFT_CLICK': lambda: self.left_click,
             'MIDDLE_CLICK': lambda: self.middle_click,
@@ -191,6 +188,7 @@ class KeysClass():
         self.editor_left = IOKey(mapping=self.IO_MAPPING['LEFT'])
         self.editor_down = IOKey(mapping=self.IO_MAPPING['DOWN'])
         self.editor_right = IOKey(mapping=self.IO_MAPPING['RIGHT'])
+        self.editor_shift = IOKey(mapping=self.IO_MAPPING['SHIFT'])
         # main game
         self.primary = IOKey(mapping=self.IO_MAPPING['LEFT_CLICK'])
         self.secondary = IOKey(mapping=self.IO_MAPPING['RIGHT_CLICK'])
@@ -207,7 +205,7 @@ class KeysClass():
             # common
             self.cursor_x_pos, self.cursor_y_pos, 
             # editor
-            self.editor_primary, self.editor_up, self.editor_left, self.editor_down, self.editor_right,
+            self.editor_primary, self.editor_up, self.editor_left, self.editor_down, self.editor_right, self.editor_shift,
             # main game
             self.primary, self.secondary, self.release_grapple, self.float_up, self.left, self.sink_down, self.right, self.select, self.interact, self.pause,
         ]
@@ -237,16 +235,20 @@ class KeysClass():
             control.update(control.mapping())
     #
     def keyboard_key_to_character(self):
+        if self.keys[pygame.K_LCTRL] or self.keys[pygame.K_RCTRL]:
+            if self.keys[pygame.K_a]: return 'CTRL_A'
+            if self.keys[pygame.K_c]: return 'CTRL_C'
+            if self.keys[pygame.K_v]: return 'CTRL_V'
+            if self.keys[pygame.K_x]: return 'CTRL_X'
+            if self.keys[pygame.K_z]: return 'CTRL_Z'
+            if self.keys[pygame.K_BACKSPACE]: return 'CTRL_BACKSPACE'
+            if self.keys[pygame.K_DELETE]: return 'CTRL_DELETE'
         if self.keys[pygame.K_UP]: return 'UP'
         if self.keys[pygame.K_DOWN]: return 'DOWN'
         if self.keys[pygame.K_DELETE]: return 'DELETE'
         if self.keys[pygame.K_BACKSPACE]: return 'BACKSPACE'
         if self.keys[pygame.K_RETURN]: return 'RETURN'
-        if self.keys[pygame.K_LCTRL] or self.keys[pygame.K_RCTRL]:
-            if self.keys[pygame.K_a]: return 'CTRL_A'
-            if self.keys[pygame.K_c]: return 'CTRL_C'
-            if self.keys[pygame.K_v]: return 'CTRL_V'
-            if self.keys[pygame.K_z]: return 'CTRL_Z'
+        if self.keys[pygame.K_SPACE]: return ' '
         if not self.keys[pygame.K_LSHIFT] and not self.keys[pygame.K_RSHIFT]:
             if self.keys[pygame.K_0]: return '0'
             if self.keys[pygame.K_1]: return '1'

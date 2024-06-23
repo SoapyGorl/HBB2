@@ -1,0 +1,2 @@
+1. forward / backward slash for file path
+2. windows key + v clipboard; probably something similar for mac/linux
