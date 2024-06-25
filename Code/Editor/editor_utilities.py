@@ -3,6 +3,7 @@ import math
 
 
 class TextInput():
+    _STOPPING_CHARACTERS = ' ,.?!:;/\\[](){}'
     def __init__(self, 
                  background_ltwh: list[int], 
                  background_color: list[float], 
@@ -145,7 +146,8 @@ class TextInput():
         return keys_class_instance.keyboard_key_to_character()
     #
     def update_arrow_key_index(self, keys_class_instance):
-        if not keys_class_instance.editor_shift.pressed:
+        # just arrow key
+        if not keys_class_instance.editor_shift.pressed and not keys_class_instance.editor_control.pressed:
             self.stop_highlighting()
             if keys_class_instance.editor_left.newly_pressed:
                 self.new_selected_index(self.selected_index - 1)
@@ -163,7 +165,8 @@ class TextInput():
                 if keys_class_instance.editor_right.pressed:
                     self.new_selected_index(self.selected_index + 1)
                     return
-        else:
+        # shift and arrow key
+        if keys_class_instance.editor_shift.pressed and not keys_class_instance.editor_control.pressed:
             if keys_class_instance.editor_left.newly_pressed:
                 if (self.highlighted_index_range[0] == -1):
                     self.highlighted_index_range[0] = self.selected_index
@@ -189,6 +192,132 @@ class TextInput():
                     return
                 if keys_class_instance.editor_right.pressed:
                     self.new_selected_index(self.selected_index + 1)
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+        # control and arrow key
+        if not keys_class_instance.editor_shift.pressed and keys_class_instance.editor_control.pressed:
+            self.stop_highlighting()
+            if keys_class_instance.editor_left.newly_pressed:
+                self.time_when_left_or_right_was_newly_pressed = get_time()
+                found_desired_character, space_index = self.reverse_iterate_through_string_for_characters()
+                if not found_desired_character:
+                    self.new_selected_index(0)
+                    return
+                if space_index == 0:
+                    self.new_selected_index(1)
+                    return
+                self.new_selected_index(space_index+1)
+                return
+            if keys_class_instance.editor_right.newly_pressed:
+                self.time_when_left_or_right_was_newly_pressed = get_time()
+                found_desired_character, space_index = self.iterate_through_string_for_character()
+                if not found_desired_character:
+                    self.new_selected_index(len(self.current_string))
+                    return
+                if self.selected_index + 1 + space_index == len(self.current_string):
+                    self.new_selected_index(len(self.current_string) - 1)
+                    return
+                self.new_selected_index(self.selected_index+space_index)
+                return
+            current_time = get_time()
+            if (current_time - self.time_when_left_or_right_was_newly_pressed > self.time_before_fast) and (current_time - self.last_move_time > self.fast_time):
+                if keys_class_instance.editor_left.pressed:
+                    found_desired_character, space_index = self.reverse_iterate_through_string_for_characters()
+                    if not found_desired_character:
+                        self.new_selected_index(0)
+                        return
+                    if space_index == 0:
+                        self.new_selected_index(1)
+                        return
+                    self.new_selected_index(space_index+1)
+                    return
+                if keys_class_instance.editor_right.pressed:
+                    found_desired_character, space_index = self.iterate_through_string_for_character()
+                    if not found_desired_character:
+                        self.new_selected_index(len(self.current_string))
+                        return
+                    if self.selected_index + 1 + space_index == len(self.current_string):
+                        self.new_selected_index(len(self.current_string) - 1)
+                        return
+                    self.new_selected_index(self.selected_index+space_index)
+                    return
+        # control and shift and arrow key
+        if keys_class_instance.editor_shift.pressed and keys_class_instance.editor_control.pressed:
+            if keys_class_instance.editor_left.newly_pressed:
+                self.time_when_left_or_right_was_newly_pressed = get_time()
+                if (self.highlighted_index_range[0] == -1):
+                    self.highlighted_index_range[0] = self.selected_index
+                found_desired_character, space_index = self.reverse_iterate_through_string_for_characters()
+                if not found_desired_character:
+                    self.new_selected_index(0)
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+                if space_index == 0:
+                    self.new_selected_index(1)
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+                self.new_selected_index(space_index+1)
+                self.highlighted_index_range[1] = self.selected_index
+                self.update_currently_highlighting()
+                return
+            if keys_class_instance.editor_right.newly_pressed:
+                self.time_when_left_or_right_was_newly_pressed = get_time()
+                if (self.highlighted_index_range[0] == -1):
+                    self.highlighted_index_range[0] = self.selected_index
+                found_desired_character, space_index = self.iterate_through_string_for_character()
+                if not found_desired_character:
+                    self.new_selected_index(len(self.current_string))
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+                if self.selected_index + 1 + space_index == len(self.current_string):
+                    self.new_selected_index(len(self.current_string) - 1)
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+                self.new_selected_index(self.selected_index+space_index)
+                self.highlighted_index_range[1] = self.selected_index
+                self.update_currently_highlighting()
+                return
+            current_time = get_time()
+            if (current_time - self.time_when_left_or_right_was_newly_pressed > self.time_before_fast) and (current_time - self.last_move_time > self.fast_time):
+                if keys_class_instance.editor_left.pressed:
+                    if (self.highlighted_index_range[0] == -1):
+                        self.highlighted_index_range[0] = self.selected_index
+                    found_desired_character, space_index = self.reverse_iterate_through_string_for_characters()
+                    if not found_desired_character:
+                        self.new_selected_index(0)
+                        self.highlighted_index_range[1] = self.selected_index
+                        self.update_currently_highlighting()
+                        return
+                    if space_index == 0:
+                        self.new_selected_index(1)
+                        self.highlighted_index_range[1] = self.selected_index
+                        self.update_currently_highlighting()
+                        return
+                    self.new_selected_index(space_index+1)
+                    self.highlighted_index_range[1] = self.selected_index
+                    self.update_currently_highlighting()
+                    return
+                if keys_class_instance.editor_right.pressed:
+                    found_desired_character, space_index = self.iterate_through_string_for_character()
+                    if (self.highlighted_index_range[0] == -1):
+                        self.highlighted_index_range[0] = self.selected_index
+                    found_desired_character, space_index = self.iterate_through_string_for_character()
+                    if not found_desired_character:
+                        self.new_selected_index(len(self.current_string))
+                        self.highlighted_index_range[1] = self.selected_index
+                        self.update_currently_highlighting()
+                        return
+                    if self.selected_index + 1 + space_index == len(self.current_string):
+                        self.new_selected_index(len(self.current_string) - 1)
+                        self.highlighted_index_range[1] = self.selected_index
+                        self.update_currently_highlighting()
+                        return
+                    self.new_selected_index(self.selected_index+space_index)
                     self.highlighted_index_range[1] = self.selected_index
                     self.update_currently_highlighting()
                     return
@@ -417,19 +546,8 @@ class TextInput():
                     self.new_selected_index(lower_index)
                     self.stop_highlighting()
                     return
-                
-                found_a_space = False
-                first_loop = True
-                for index, character in reversed(list(enumerate(self.current_string[:self.selected_index]))):
-                    if character == ' ':
-                        if first_loop:
-                            continue
-                        space_index = index
-                        found_a_space = True
-                        break
-                    first_loop = False
-
-                if not found_a_space:
+                found_desired_character, space_index = self.reverse_iterate_through_string_for_characters()
+                if not found_desired_character:
                     self.current_string = self.current_string[self.selected_index:]
                     self.new_selected_index(0)
                     return
@@ -449,19 +567,8 @@ class TextInput():
                     self.new_selected_index(lower_index)
                     self.stop_highlighting()
                     return
-
-                found_a_space = False
-                first_loop = True
-                for index, character in enumerate(self.current_string[self.selected_index:]):
-                    if character == ' ':
-                        if first_loop:
-                            continue
-                        space_index = index
-                        found_a_space = True
-                        break
-                    first_loop = False
-
-                if not found_a_space:
+                found_desired_character, space_index = self.iterate_through_string_for_character()
+                if not found_desired_character:
                     self.current_string = self.current_string[:self.selected_index]
                     self.new_selected_index(len(self.current_string))
                     return
@@ -502,6 +609,34 @@ class TextInput():
             else:
                 self.last_new_primary_click_time = current_time
                 return False
+    #
+    def reverse_iterate_through_string_for_characters(self):
+        space_index = 0
+        found_desired_character = False
+        first_loop = True
+        for index, character in reversed(list(enumerate(self.current_string[:self.selected_index]))):
+            if character in self._STOPPING_CHARACTERS:
+                if first_loop:
+                    continue
+                space_index = index
+                found_desired_character = True
+                break
+            first_loop = False
+        return found_desired_character, space_index
+    #
+    def iterate_through_string_for_character(self):
+        space_index = 0
+        found_desired_character = False
+        first_loop = True
+        for index, character in enumerate(self.current_string[self.selected_index:]):
+            if character in self._STOPPING_CHARACTERS:
+                if first_loop:
+                    continue
+                space_index = index
+                found_desired_character = True
+                break
+            first_loop = False
+        return found_desired_character, space_index
+
 
 # tab, shift tab
-# control shift ->, windows key + v
