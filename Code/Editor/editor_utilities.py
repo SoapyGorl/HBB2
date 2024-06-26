@@ -54,7 +54,7 @@ class TextInput():
         self.currently_highlighting = False
         self.last_key = ''
         self.selected_index = 0
-        self.current_string = '0123456789'
+        self.current_string = '255'
     #
     def deselect_box(self):
         self.currently_selected = False
@@ -637,6 +637,3 @@ class TextInput():
                 break
             first_loop = False
         return found_desired_character, space_index
-
-
-# tab, shift tab

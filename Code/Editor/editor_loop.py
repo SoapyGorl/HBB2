@@ -1,5 +1,5 @@
 import math
-from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range
+from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time
 from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_palette
 from Code.Editor.editor_utilities import TextInput
 
@@ -48,7 +48,7 @@ class EditorSingleton():
         self.palette_background_color = COLORS['GREY']
         self.palette_colors_border_color = COLORS['BLACK']
         self.palette_scroll_background_color = COLORS['BLACK']
-        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY'], rgba_to_glsl((0, 0, 0, 0)), rgba_to_glsl((64, 64, 64, 0)), rgba_to_glsl((128, 128, 128, 0)), rgba_to_glsl((192, 192, 192, 0)), rgba_to_glsl((0, 255, 255, 128))]
+        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY']]
         self.palette_colors_per_row = 5
         self.palette_padding = 5
         self.palette_color_wh = [35, 35]
@@ -127,6 +127,11 @@ class EditorSingleton():
                                          TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
                                          TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
                                          TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),]
+        self.add_color_input_moving_down = False
+        self.add_color_input_last_move_time = get_time()
+        self.add_color_input_initial_fast_move = get_time()
+        self.add_color_input_time_before_fast_move = 0.50
+        self.add_color_input_time_between_moves = 0.05
         self.add_color_ltwh = [0, 0, self.palette_ltwh[2], (2 * self.palette_padding) + self.add_color_words_background_ltwh[3] + self.gap_between_add_or_remove_color_and_spectrum + self.add_color_spectrum_height + self.add_color_saturation_ltwh[3] + self.add_color_alpha_ltwh[3] + self.add_color_input_height - self.palette_padding]
         #
         # tool bar
@@ -151,7 +156,6 @@ class EditorSingleton():
                 self.add_color_spectrum_height - (2 * self.add_color_spectrum_border_thickness)]
 
 
-
 class CurrentlySelectedColor():
     def __init__(self, color, palette_index, base_box_size):
         #
@@ -165,7 +169,7 @@ class CurrentlySelectedColor():
         self.palette_ltwh = [0, 0, base_box_size, base_box_size]
         #
         # mode of selection; palette/spectrum
-        self.selected_through_palette = True
+        self.selected_through_palette = False
         #
         # palette selection properties
         self.outline1_color = COLORS['YELLOW']
@@ -438,6 +442,32 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     # RGBA inputs
     Singleton.add_color_input_top = spectrum_border_ltwh[1] + spectrum_border_ltwh[3]
     current_character_top = Singleton.add_color_input_top + Singleton.add_color_input_space_between_inputs
+    # manage tab / shift tab
+    initial_move_down = (Keys.editor_tab.newly_pressed and not Keys.editor_shift.pressed)
+    initial_move_up = (Keys.editor_tab.newly_pressed and Keys.editor_shift.newly_pressed) or (Keys.editor_tab.newly_pressed and Keys.editor_shift.pressed) or (Keys.editor_tab.pressed and Keys.editor_shift.newly_pressed)
+    if initial_move_down or initial_move_up:
+        Singleton.add_color_input_moving_down = True if initial_move_down else False
+        Singleton.add_color_input_initial_fast_move = get_time()
+    if Keys.editor_tab.pressed:
+        current_time = get_time()
+        moving_this_frame = (initial_move_down or initial_move_up or ((current_time - Singleton.add_color_input_initial_fast_move > Singleton.add_color_input_time_before_fast_move) and (current_time - Singleton.add_color_input_last_move_time > Singleton.add_color_input_time_between_moves)))
+        if moving_this_frame:
+            Singleton.add_color_input_last_move_time = get_time()
+            old_selected_index = -1
+            for index, text_input in enumerate(Singleton.add_color_dynamic_inputs):
+                if text_input.currently_selected:
+                    old_selected_index = index
+                text_input.deselect_box()
+            if old_selected_index != -1:
+                if Singleton.add_color_input_moving_down:
+                    newly_selected_index = (old_selected_index + 1) % len(Singleton.add_color_inputs)
+                if not Singleton.add_color_input_moving_down:
+                    newly_selected_index = (old_selected_index - 1) % len(Singleton.add_color_inputs)
+                Singleton.add_color_dynamic_inputs[newly_selected_index].currently_selected = True
+                Singleton.add_color_dynamic_inputs[newly_selected_index].highlighted_index_range = [0, len(Singleton.add_color_dynamic_inputs[newly_selected_index].current_string)]
+                Singleton.add_color_dynamic_inputs[newly_selected_index].currently_highlighting = True
+                Singleton.add_color_dynamic_inputs[newly_selected_index].selected_index = len(Singleton.add_color_dynamic_inputs[newly_selected_index].current_string)
+    # update text input objects
     for index, input_character in enumerate(Singleton.add_color_inputs):
         Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
