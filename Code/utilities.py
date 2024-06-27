@@ -1,6 +1,5 @@
 import math
 from __main__ import PATH
-import pygame
 import time
 
 
@@ -21,6 +20,28 @@ def str_can_be_float(string):
         return True
     except:
         return False
+
+
+def str_can_be_hex(string):
+    try:
+        int(string, 16)
+        return True
+    except:
+        return False
+
+
+def switch_to_base10(string: str, base: int):
+    return int(string, base)
+
+
+def base10_to_hex(integer: int):
+    return hex(integer)[2:]
+
+
+def add_characters_to_front_of_string(string: str, desired_string_length: int, character: str):
+    if len(string) >= desired_string_length:
+        return string
+    return character * (desired_string_length - len(string)) + string
 
 
 def get_time():
@@ -199,6 +220,7 @@ IMAGE_PATHS = {
     ')': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\right_parentheses.png'],
     ';': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\semi_colon.png'],
     '_': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\underscore.png'],
+    '#': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\pound.png'],
     # common
     'editor_circle': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\editor\\common\\circle.png'],
     # editor tools on right side of screen

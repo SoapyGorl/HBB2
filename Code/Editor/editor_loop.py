@@ -1,5 +1,5 @@
 import math
-from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time
+from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time, switch_to_base10, base10_to_hex
 from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_palette
 from Code.Editor.editor_utilities import TextInput
 
@@ -116,17 +116,18 @@ class EditorSingleton():
         self.add_color_input_space_between_inputs = 12
         self.add_color_input_text_pixel_size = 3
         self.add_color_input_single_input_height = self.add_color_input_space_between_inputs + get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size)
-        self.add_color_inputs = ['R', 'G', 'B', 'A']
+        self.add_color_inputs = ['R', 'G', 'B', 'A', 'HEX #']
         self.add_color_input_equals_symbol = '='
         self.add_color_input_max_length = 0
-        self.add_color_input_max_length = max([get_text_width(Render, character, self.add_color_input_text_pixel_size) for character in self.add_color_inputs])
+        self.add_color_input_max_length = max([get_text_width(Render, character, self.add_color_input_text_pixel_size) for character in self.add_color_inputs if len(character) == 1])
         self.add_color_input_top = self.add_color_spectrum_ltwh[1] + self.add_color_spectrum_ltwh[3]
         self.add_color_input_color_equals_input_left = [self.palette_padding, self.palette_padding + self.add_color_input_max_length + get_text_width(Render, ' ', self.add_color_input_text_pixel_size), self.palette_padding + self.add_color_input_max_length + get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) - self.add_color_input_text_pixel_size]
-        self.add_color_input_height = (self.add_color_input_space_between_inputs * 5) + (4 * (get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size)))
+        self.add_color_input_height = (self.add_color_input_space_between_inputs * 6) + (5 * (get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size)))
         self.add_color_dynamic_inputs = [TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
                                          TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
                                          TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
-                                         TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),]
+                                         TextInput([self.add_color_input_color_equals_input_left[2], 0, self.palette_ltwh[2] - (2 * self.palette_padding) - self.add_color_input_max_length - get_text_width(Render, ' = ', self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[0, 255], is_an_int=True, must_fit=True, default_value='0'),
+                                         TextInput([self.palette_padding + get_text_width(Render, self.add_color_inputs[4], self.add_color_input_text_pixel_size) + self.add_color_input_text_pixel_size, 0, self.palette_ltwh[2] - (2 * self.palette_padding) - get_text_width(Render, self.add_color_inputs[4], self.add_color_input_text_pixel_size) - self.add_color_input_text_pixel_size, get_text_height(self.add_color_input_text_pixel_size) - (2 * self.add_color_input_text_pixel_size) + (self.add_color_input_space_between_inputs / 2)], self.add_color_input_background_color, self.add_color_input_inputs_and_equals_color, self.add_color_input_highlighted_text_color, self.add_color_input_highlighted_background_color, self.add_color_input_text_pixel_size, (self.add_color_input_space_between_inputs / 4), allowable_range=[switch_to_base10('00000000', 16), switch_to_base10('ffffffff', 16)], is_a_hex=True, show_front_zeros=True, number_of_digits=8, must_fit=True, default_value='00000000'),]
         self.add_color_input_moving_down = False
         self.add_color_input_last_move_time = get_time()
         self.add_color_input_initial_fast_move = get_time()
@@ -468,12 +469,18 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
                 Singleton.add_color_dynamic_inputs[newly_selected_index].currently_highlighting = True
                 Singleton.add_color_dynamic_inputs[newly_selected_index].selected_index = len(Singleton.add_color_dynamic_inputs[newly_selected_index].current_string)
     # update text input objects
-    for index, input_character in enumerate(Singleton.add_color_inputs):
+    text_offset_y = -Singleton.add_color_dynamic_inputs[0].text_padding / 2
+    for index, input_character in enumerate(Singleton.add_color_inputs[:4]):
         Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=-Singleton.add_color_dynamic_inputs[index].text_padding / 2)
+        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
         current_character_top += Singleton.add_color_input_single_input_height
+    # HEX
+    index, characters = 4, Singleton.add_color_inputs[4]
+    Render.draw_string_of_characters(Screen, gl_context, characters, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
+    Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
+    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
 
 
 def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):

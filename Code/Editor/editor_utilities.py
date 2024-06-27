@@ -1,4 +1,4 @@
-from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_text_height, get_time, str_can_be_int, str_can_be_float
+from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_text_height, get_time, str_can_be_int, str_can_be_float, str_can_be_hex, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
 import math
 
 
@@ -15,6 +15,9 @@ class TextInput():
                  allowable_range: list[float | int, float | int] = [-math.inf, math.inf], 
                  is_an_int: bool = False, 
                  is_a_float: bool = False,
+                 is_a_hex: bool = False,
+                 show_front_zeros: bool = False,
+                 number_of_digits: int = 0,
                  must_fit: bool = False,
                  default_value: str = '0'):
 
@@ -28,12 +31,17 @@ class TextInput():
         self.allowable_range = allowable_range
         self.is_a_float = is_a_float
         self.is_an_int = is_an_int
+        self.is_a_hex = is_a_hex
+        self.show_front_zeros = show_front_zeros
+        self.number_of_digits = number_of_digits
         self.must_fit = must_fit
         self.default_value = default_value
         if self.is_a_float:
             self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', 'CTRL_A', 'CTRL_C', 'CTRL_V', 'CTRL_X', 'CTRL_BACKSPACE', 'CTRL_DELETE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
         if self.is_an_int:
             self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', 'CTRL_A', 'CTRL_C', 'CTRL_V', 'CTRL_X', 'CTRL_BACKSPACE', 'CTRL_DELETE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        if self.is_a_hex:
+            self.allowable_keys = ['RETURN', 'DELETE', 'BACKSPACE', 'UP', 'DOWN', 'CTRL_A', 'CTRL_C', 'CTRL_V', 'CTRL_X', 'CTRL_BACKSPACE', 'CTRL_DELETE', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
         #
         self.text_height = get_text_height(self.text_pixel_size) - (2 * self.text_pixel_size)
         self.highlighted_index_range = [2, 5]
@@ -74,6 +82,15 @@ class TextInput():
         if self.is_an_int:
             if str_can_be_int(self.current_string):
                 self.current_string = str(round(move_number_to_desired_range(self.allowable_range[0], float(self.current_string), self.allowable_range[1])))
+                return
+            else:
+                self.current_string = self.default_value
+                return
+        if self.is_a_hex:
+            if str_can_be_hex(self.current_string):
+                self.current_string = base10_to_hex(round(move_number_to_desired_range(self.allowable_range[0], switch_to_base10(self.current_string, 16), self.allowable_range[1])))
+                if self.show_front_zeros:
+                    self.current_string = add_characters_to_front_of_string(self.current_string, self.number_of_digits, '0')
                 return
             else:
                 self.current_string = self.default_value
@@ -456,6 +473,14 @@ class TextInput():
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) + 1, self.allowable_range[1]))
                     return
+                if self.is_a_hex:
+                    if not str_can_be_hex(self.current_string):
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = base10_to_hex(round(move_number_to_desired_range(self.allowable_range[0], switch_to_base10(self.current_string, 16) + 1, self.allowable_range[1])))
+                    if self.show_front_zeros:
+                        self.current_string = add_characters_to_front_of_string(self.current_string, self.number_of_digits, '0')
+                    return
                 return
 
             case 'DOWN':
@@ -475,6 +500,14 @@ class TextInput():
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) - 1, self.allowable_range[1]))
                     self.new_selected_index(len(self.current_string))
+                    return
+                if self.is_a_hex:
+                    if not str_can_be_hex(self.current_string):
+                        return
+                    self.last_edit_time = get_time()
+                    self.current_string = base10_to_hex(round(move_number_to_desired_range(self.allowable_range[0], switch_to_base10(self.current_string, 16) - 1, self.allowable_range[1])))
+                    if self.show_front_zeros:
+                        self.current_string = add_characters_to_front_of_string(self.current_string, self.number_of_digits, '0')
                     return
                 return
 
@@ -516,6 +549,16 @@ class TextInput():
                         return
                 if self.is_an_int:
                     if not str_can_be_int(potential_new_text):
+                        return
+                    self.current_string = potential_new_text
+                    if not self.currently_highlighting:
+                        self.new_selected_index(self.selected_index + len(pasted_text))
+                    if self.currently_highlighting:
+                        self.new_selected_index(lower_index + len(pasted_text))
+                        self.stop_highlighting()
+                        return
+                if self.is_a_hex:
+                    if not str_can_be_hex(potential_new_text):
                         return
                     self.current_string = potential_new_text
                     if not self.currently_highlighting:
