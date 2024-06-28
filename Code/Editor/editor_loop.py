@@ -57,6 +57,7 @@ class EditorSingleton():
         self.palette_color_border_thickness = 2
         self.palette_ltwh = [0, self.header_bottom, (2 * self.palette_padding) + (self.palette_colors_per_row * self.palette_color_wh[0]) + self.palette_space_between_colors_and_scroll + self.palette_scroll_width - (self.palette_color_border_thickness * (self.palette_colors_per_row) - 1), 0]
         self.currently_selected_color = CurrentlySelectedColor(self.palette_colors[0], 0, self.palette_color_wh[0])
+        self.palette_pressed_add_or_remove_button_this_frame = False
         #
         # separate palette and add color
         self.separate_palette_and_add_color_color = COLORS['BLUE']
@@ -363,17 +364,35 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.add_color_ltwh, Singleton.add_color_background_color)
     #
     # add/remove color button
+    Singleton.palette_pressed_add_or_remove_button_this_frame = False
     Singleton.add_color_words_background_ltwh[1] = Singleton.separate_palette_and_add_color_ltwh[1] + Singleton.separate_palette_and_add_color_ltwh[3] + Singleton.palette_padding
     if Singleton.currently_selected_color.color[3] < 1:
         Singleton.add_or_remove_checkerboard_ltwh[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness
         Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_or_remove_checkerboard_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.add_or_remove_checkerboard_repeat, Singleton.add_or_remove_checkerboard_repeat)
     Render.draw_rectangle(Screen, gl_context, Singleton.add_color_words_background_ltwh, Singleton.add_color_words_border_thickness, Singleton.add_color_words_border_color, True, Singleton.currently_selected_color.color, True)
+    # add color
     if not Singleton.currently_selected_color.selected_through_palette:
         Singleton.add_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
         Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
+        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
+            Singleton.palette_pressed_add_or_remove_button_this_frame = True
+            Singleton.palette_colors.append(Singleton.currently_selected_color.color)
+            Singleton.currently_selected_color.selected_through_palette = True
+            Singleton.currently_selected_color.palette_index = len(Singleton.palette_colors) - 1
+    # remove color
     if Singleton.currently_selected_color.selected_through_palette:
         Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
         Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
+        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
+            for _ in range(1):
+                Singleton.palette_pressed_add_or_remove_button_this_frame = True
+                if len(Singleton.palette_colors) == 0:
+                    Singleton.currently_selected_color.palette_index = -1
+                    break
+                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors) - 1:
+                    Singleton.currently_selected_color.palette_index -= 1
+                    break
     #
     # RGBA spectrum
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()

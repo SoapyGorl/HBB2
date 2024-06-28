@@ -92,7 +92,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
                 Singleton.add_color_current_circle_color = COLORS['WHITE'] if mouse_in_top_half_of_spectrum else COLORS['BLACK']
                 Singleton.add_color_circle_center_relative_xy = [spectrum_x_pos, spectrum_y_pos]
                 Singleton.add_color_spectrum_x_percentage = (spectrum_x_pos / color_spectrum_ltwh[2])
-                Singleton.add_color_spectrum_y_percentage = (spectrum_y_pos / color_spectrum_ltwh[3])
+                Singleton.add_color_spectrum_y_percentage = abs(1 - (spectrum_y_pos / color_spectrum_ltwh[3]))
                 # update saturation
                 saturation_x_pos = move_number_to_desired_range(0, Singleton.add_color_saturation_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
                 Singleton.add_color_saturation_circle_relative_x = saturation_x_pos
@@ -111,7 +111,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
             Singleton.currently_selected_color.update_outline_ltwh()
     #
     # draw selected palette color outline
-    if Singleton.currently_selected_color.selected_through_palette:
+    if Singleton.currently_selected_color.selected_through_palette and len(Singleton.palette_colors) > 0:
         Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline2_color)
         Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
