@@ -48,7 +48,7 @@ class EditorSingleton():
         self.palette_background_color = COLORS['GREY']
         self.palette_colors_border_color = COLORS['BLACK']
         self.palette_scroll_background_color = COLORS['BLACK']
-        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY']]
+        self.palette_colors = [COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY'], rgba_to_glsl((0, 50, 0, 255)), rgba_to_glsl((0, 230, 0, 255))]
         self.palette_colors_per_row = 5
         self.palette_padding = 5
         self.palette_color_wh = [35, 35]
@@ -337,7 +337,6 @@ class CurrentlySelectedColor():
         luminance = (max_color + min_color) / 2
         chroma = max_color - min_color
         if chroma == 0:
-            luminance = 1 - luminance
             hue = 0
             saturation = 0
         else:
@@ -386,13 +385,17 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
             for _ in range(1):
                 Singleton.palette_pressed_add_or_remove_button_this_frame = True
+                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
                 if len(Singleton.palette_colors) == 0:
                     Singleton.currently_selected_color.palette_index = -1
+                    Singleton.currently_selected_color.selected_through_palette = False
                     break
-                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors) - 1:
+                if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors):
                     Singleton.currently_selected_color.palette_index -= 1
+                    if len(Singleton.palette_colors) > 0:
+                        Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
                     break
+                Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
     #
     # RGBA spectrum
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()

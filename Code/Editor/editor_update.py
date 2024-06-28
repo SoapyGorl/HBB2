@@ -76,35 +76,34 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
         if palette_color[3] < 1:
             Render.checkerboard(Screen, gl_context, 'black_pixel', color_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, color_ltwh, Singleton.palette_color_border_thickness, Singleton.palette_colors_border_color, True, palette_color, True)
-        if Keys.editor_primary.newly_pressed:
-            if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh):
-                Singleton.currently_selected_color.selected_through_palette = True
-                Singleton.currently_selected_color.color = palette_color
-                Singleton.currently_selected_color.palette_index = palette_color_index
-                # update spectrum based on palette selection
-                Singleton.add_color_spectrum_x_percentage, Singleton.add_color_saturation_percentage, Singleton.add_color_spectrum_y_percentage = Singleton.currently_selected_color.rgb_to_hsl(Singleton.currently_selected_color.color)
-                Singleton.add_color_alpha_percentage = Singleton.currently_selected_color.color[3]
-                color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
-                # update spectrum
-                spectrum_x_pos = move_number_to_desired_range(0, Singleton.add_color_spectrum_x_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
-                spectrum_y_pos = move_number_to_desired_range(0, Singleton.add_color_spectrum_y_percentage * color_spectrum_ltwh[3], color_spectrum_ltwh[3])
-                mouse_in_top_half_of_spectrum = (spectrum_y_pos / color_spectrum_ltwh[3]) > 0.5
-                Singleton.add_color_current_circle_color = COLORS['WHITE'] if mouse_in_top_half_of_spectrum else COLORS['BLACK']
-                Singleton.add_color_circle_center_relative_xy = [spectrum_x_pos, spectrum_y_pos]
-                Singleton.add_color_spectrum_x_percentage = (spectrum_x_pos / color_spectrum_ltwh[2])
-                Singleton.add_color_spectrum_y_percentage = abs(1 - (spectrum_y_pos / color_spectrum_ltwh[3]))
-                # update saturation
-                saturation_x_pos = move_number_to_desired_range(0, Singleton.add_color_saturation_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
-                Singleton.add_color_saturation_circle_relative_x = saturation_x_pos
-                Singleton.currently_selected_color.saturation = Singleton.add_color_saturation_circle_relative_x / color_spectrum_ltwh[2]
-                Singleton.add_color_saturation_percentage = (saturation_x_pos / color_spectrum_ltwh[2])
-                # update alpha
-                alpha_x_pos = move_number_to_desired_range(0, Singleton.add_color_alpha_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
-                Singleton.add_color_alpha_circle_relative_x = alpha_x_pos
-                Singleton.currently_selected_color.alpha = Singleton.add_color_alpha_circle_relative_x / color_spectrum_ltwh[2]
-                Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
-                # update the currently selected color
-                Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
+        if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or (Singleton.palette_pressed_add_or_remove_button_this_frame and (Singleton.currently_selected_color.palette_index == palette_color_index)):
+            Singleton.currently_selected_color.selected_through_palette = True
+            Singleton.currently_selected_color.color = palette_color
+            Singleton.currently_selected_color.palette_index = palette_color_index
+            # update spectrum based on palette selection
+            Singleton.add_color_spectrum_x_percentage, Singleton.add_color_saturation_percentage, Singleton.add_color_spectrum_y_percentage = Singleton.currently_selected_color.rgb_to_hsl(Singleton.currently_selected_color.color)
+            Singleton.add_color_alpha_percentage = Singleton.currently_selected_color.color[3]
+            color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
+            # update spectrum
+            spectrum_x_pos = move_number_to_desired_range(0, Singleton.add_color_spectrum_x_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
+            spectrum_y_pos = move_number_to_desired_range(0, Singleton.add_color_spectrum_y_percentage * color_spectrum_ltwh[3], color_spectrum_ltwh[3])
+            mouse_in_bottom_half_of_spectrum = (spectrum_y_pos / color_spectrum_ltwh[3]) < 0.5
+            Singleton.add_color_current_circle_color = COLORS['WHITE'] if mouse_in_bottom_half_of_spectrum else COLORS['BLACK']
+            Singleton.add_color_circle_center_relative_xy = [spectrum_x_pos, abs(color_spectrum_ltwh[3] - spectrum_y_pos)]
+            Singleton.add_color_spectrum_x_percentage = (spectrum_x_pos / color_spectrum_ltwh[2])
+            Singleton.add_color_spectrum_y_percentage = abs(1 - (spectrum_y_pos / color_spectrum_ltwh[3]))
+            # update saturation
+            saturation_x_pos = move_number_to_desired_range(0, Singleton.add_color_saturation_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
+            Singleton.add_color_saturation_circle_relative_x = saturation_x_pos
+            Singleton.currently_selected_color.saturation = Singleton.add_color_saturation_circle_relative_x / color_spectrum_ltwh[2]
+            Singleton.add_color_saturation_percentage = (saturation_x_pos / color_spectrum_ltwh[2])
+            # update alpha
+            alpha_x_pos = move_number_to_desired_range(0, Singleton.add_color_alpha_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
+            Singleton.add_color_alpha_circle_relative_x = alpha_x_pos
+            Singleton.currently_selected_color.alpha = Singleton.add_color_alpha_circle_relative_x / color_spectrum_ltwh[2]
+            Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
+            # update the currently selected color
+            Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
         if (Singleton.currently_selected_color.palette_index == palette_color_index):
             Singleton.currently_selected_color.palette_ltwh[0] = color_ltwh[0]
             Singleton.currently_selected_color.palette_ltwh[1] = color_ltwh[1]
