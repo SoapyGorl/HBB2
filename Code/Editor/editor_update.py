@@ -76,7 +76,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
         if palette_color[3] < 1:
             Render.checkerboard(Screen, gl_context, 'black_pixel', color_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, color_ltwh, Singleton.palette_color_border_thickness, Singleton.palette_colors_border_color, True, palette_color, True)
-        if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or (Singleton.palette_pressed_add_or_remove_button_this_frame and (Singleton.currently_selected_color.palette_index == palette_color_index)):
+        if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or ((Singleton.currently_selected_color.palette_index == palette_color_index) and Singleton.palette_pressed_add_or_remove_button_this_frame):
             Singleton.currently_selected_color.selected_through_palette = True
             Singleton.currently_selected_color.color = palette_color
             Singleton.currently_selected_color.palette_index = palette_color_index

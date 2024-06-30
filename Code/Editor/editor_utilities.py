@@ -63,10 +63,22 @@ class TextInput():
         self.last_key = ''
         self.selected_index = 0
         self.current_string = '255'
+        self.should_update_spectrum = False
     #
     def deselect_box(self):
         self.currently_selected = False
         self.validate_value()
+    #
+    def is_valid(self):
+        if self.is_a_float and str_can_be_float(self.current_string):
+            if self.allowable_range[0] <= float(self.current_string) <= self.allowable_range[1]:
+                return True
+        if self.is_an_int and str_can_be_int(self.current_string):
+            if self.allowable_range[0] <= round(float(self.current_string)) <= self.allowable_range[1]:
+                return True
+        if self.is_a_hex and str_can_be_hex(self.current_string):
+            if self.allowable_range[0] <= switch_to_base10(self.current_string, 16) <= self.allowable_range[1]:
+                return True
     #
     def validate_value(self):
         if self.current_string == '':
@@ -97,6 +109,7 @@ class TextInput():
                 return
     #
     def update(self, screen_instance, gl_context, keys_class_instance, render_instance, offset_x: int = 0, offset_y: int = 0):
+        self.should_update_spectrum = False
         self.double_clicked_last_frame = self.double_clicked
         background_ltwh = self._update(screen_instance, gl_context, keys_class_instance, render_instance, offset_x, offset_y)
         if not self.currently_selected:
@@ -123,7 +136,7 @@ class TextInput():
         background_ltwh = [self.background_ltwh[0] + offset_x, self.background_ltwh[1] + offset_y, self.background_ltwh[2], self.background_ltwh[3]]
         render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'black_pixel', background_ltwh, self.background_color)
         cursor_inside_box = point_is_in_ltwh(keys_class_instance.cursor_x_pos.value, keys_class_instance.cursor_y_pos.value, background_ltwh)
-        double_clicked = self.update_double_click(keys_class_instance)
+        double_clicked = self.update_double_click(keys_class_instance, background_ltwh)
         if double_clicked:
             return background_ltwh
         # not currently selected
@@ -139,6 +152,7 @@ class TextInput():
         # currently selected
         if self.currently_selected:
             if keys_class_instance.editor_primary.newly_pressed and not cursor_inside_box:
+                self.should_update_spectrum = True
                 self.deselect_box()
                 return background_ltwh
             if keys_class_instance.editor_left.pressed or keys_class_instance.editor_right.pressed:
@@ -412,6 +426,7 @@ class TextInput():
         editing_this_frame = new_press or ((current_time - self.time_when_edit_key_was_newly_pressed > self.time_before_fast) and (current_time - self.last_edit_time > self.fast_time))
         if not editing_this_frame:
             return
+        self.should_update_spectrum = True
 
         match current_key:
             case 'RETURN':
@@ -636,8 +651,8 @@ class TextInput():
                     self.new_selected_index(self.selected_index + 1)
                     return
     #
-    def update_double_click(self, keys_class_instance):
-        if keys_class_instance.editor_primary.newly_pressed:
+    def update_double_click(self, keys_class_instance, background_ltwh):
+        if keys_class_instance.editor_primary.newly_pressed and point_is_in_ltwh(keys_class_instance.cursor_x_pos.value, keys_class_instance.cursor_y_pos.value, background_ltwh):
             current_time = get_time()
             if self.currently_selected:
                 self.double_clicked = (current_time - self.last_new_primary_click_time) < self.double_click_time
