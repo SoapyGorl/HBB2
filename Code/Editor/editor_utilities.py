@@ -472,21 +472,25 @@ class TextInput():
                     return
 
             case 'UP':
-                self.highlighted_index_range[0] = 0
-                self.highlighted_index_range[1] = len(self.current_string)
-                self.update_currently_highlighting()
-                self.new_selected_index(len(self.current_string))
                 if self.is_an_int:
                     if not str_can_be_int(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) + 1, self.allowable_range[1]))
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
+                    self.new_selected_index(len(self.current_string))
                     return
                 if self.is_a_float:
                     if not str_can_be_float(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) + 1, self.allowable_range[1]))
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
+                    self.new_selected_index(len(self.current_string))
                     return
                 if self.is_a_hex:
                     if not str_can_be_hex(self.current_string):
@@ -495,25 +499,33 @@ class TextInput():
                     self.current_string = base10_to_hex(round(move_number_to_desired_range(self.allowable_range[0], switch_to_base10(self.current_string, 16) + 1, self.allowable_range[1])))
                     if self.show_front_zeros:
                         self.current_string = add_characters_to_front_of_string(self.current_string, self.number_of_digits, '0')
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
+                    self.new_selected_index(len(self.current_string))
                     return
                 return
 
             case 'DOWN':
-                self.highlighted_index_range[0] = 0
-                self.highlighted_index_range[1] = len(self.current_string)
-                self.update_currently_highlighting()
-                self.new_selected_index(len(self.current_string))
                 if self.is_an_int:
                     if not str_can_be_int(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], int(self.current_string) - 1, self.allowable_range[1]))
                     self.new_selected_index(len(self.current_string))
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
+                    self.new_selected_index(len(self.current_string))
                 if self.is_a_float:
                     if not str_can_be_float(self.current_string):
                         return
                     self.last_edit_time = get_time()
                     self.current_string = str(move_number_to_desired_range(self.allowable_range[0], float(self.current_string) - 1, self.allowable_range[1]))
+                    self.new_selected_index(len(self.current_string))
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
                     self.new_selected_index(len(self.current_string))
                     return
                 if self.is_a_hex:
@@ -523,6 +535,10 @@ class TextInput():
                     self.current_string = base10_to_hex(round(move_number_to_desired_range(self.allowable_range[0], switch_to_base10(self.current_string, 16) - 1, self.allowable_range[1])))
                     if self.show_front_zeros:
                         self.current_string = add_characters_to_front_of_string(self.current_string, self.number_of_digits, '0')
+                    self.highlighted_index_range[0] = 0
+                    self.highlighted_index_range[1] = len(self.current_string)
+                    self.update_currently_highlighting()
+                    self.new_selected_index(len(self.current_string))
                     return
                 return
 

@@ -17,6 +17,8 @@ def initialize_display():
 
 class ScreenObject():
     def __init__(self):
+        self.ACCEPTABLE_WIDTH_RANGE = [650, 10000]
+        self.ACCEPTABLE_HEIGHT_RANGE = [650, 10000]
         self.width = 1000
         self.height = 700
         self.aspect = self.width / self.height

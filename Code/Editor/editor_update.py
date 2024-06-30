@@ -1,5 +1,5 @@
 import math
-from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, COLORS
+from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, percent_to_rgba, base10_to_hex, COLORS
 
 
 def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
@@ -104,6 +104,13 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
             Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
             # update the currently selected color
             Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
+            # update text input displaying rgba and hex
+            red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
+            Singleton.add_color_dynamic_inputs[0].current_string = str(red)
+            Singleton.add_color_dynamic_inputs[1].current_string = str(green)
+            Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
+            Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
+            Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
         if (Singleton.currently_selected_color.palette_index == palette_color_index):
             Singleton.currently_selected_color.palette_ltwh[0] = color_ltwh[0]
             Singleton.currently_selected_color.palette_ltwh[1] = color_ltwh[1]

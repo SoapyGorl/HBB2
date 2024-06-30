@@ -375,9 +375,14 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
         if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
             Singleton.palette_pressed_add_or_remove_button_this_frame = True
-            Singleton.palette_colors.append(Singleton.currently_selected_color.color)
             Singleton.currently_selected_color.selected_through_palette = True
-            Singleton.currently_selected_color.palette_index = len(Singleton.palette_colors) - 1
+            if Singleton.currently_selected_color.color in Singleton.palette_colors:
+                for index, color in enumerate(Singleton.palette_colors):
+                    if Singleton.currently_selected_color.color == color:
+                        Singleton.currently_selected_color.palette_index = index
+            else:
+                Singleton.palette_colors.append(Singleton.currently_selected_color.color)
+                Singleton.currently_selected_color.palette_index = len(Singleton.palette_colors) - 1
     # remove color
     if Singleton.currently_selected_color.selected_through_palette:
         Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
@@ -413,6 +418,13 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Singleton.add_color_spectrum_x_percentage = (spectrum_x_pos / color_spectrum_ltwh[2])
         Singleton.add_color_spectrum_y_percentage = (spectrum_y_pos / color_spectrum_ltwh[3])
         Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
+        # update text input displaying rgba and hex
+        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
+        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
+        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
+        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
+        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
+        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
         if Keys.editor_primary.released:
             Singleton.add_color_circle_is_held = False
     Singleton.add_color_circle_ltwh[0] = color_spectrum_ltwh[0] + Singleton.add_color_circle_center_relative_xy[0] - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
@@ -432,6 +444,13 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Singleton.currently_selected_color.saturation = Singleton.add_color_saturation_circle_relative_x / color_spectrum_ltwh[2]
         Singleton.add_color_saturation_percentage = (saturation_x_pos / color_spectrum_ltwh[2])
         Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
+        # update text input displaying rgba and hex
+        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
+        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
+        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
+        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
+        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
+        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
         if Keys.editor_primary.released:
             Singleton.add_color_saturation_circle_is_held = False
     Singleton.add_color_saturation_circle_ltwh[0] = Singleton.add_color_saturation_ltwh[0] + Singleton.add_color_saturation_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
@@ -452,6 +471,13 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Singleton.currently_selected_color.alpha = Singleton.add_color_alpha_circle_relative_x / color_spectrum_ltwh[2]
         Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
         Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
+        # update text input displaying rgba and hex
+        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
+        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
+        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
+        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
+        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
+        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
         if Keys.editor_primary.released:
             Singleton.add_color_alpha_circle_is_held = False
     Singleton.add_color_alpha_circle_ltwh[0] = Singleton.add_color_alpha_ltwh[0] + Singleton.add_color_alpha_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
@@ -522,6 +548,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             changed_value_is_hex = True
     # update currently selected color
     if attempt_to_update_selected_color:
+        Singleton.currently_selected_color.selected_through_palette = False
         change_spectrum_to_new_color = False
         if changed_value_is_rgba:
             all_are_valid = True

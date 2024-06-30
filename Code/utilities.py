@@ -76,9 +76,9 @@ def rgba_to_glsl(rgba: list[int, int, int, int] | tuple[int, int, int, int]):
 def percent_to_rgba(rgba: list[int, int, int, int] | tuple[int, int, int, int]):
     return (
         round(rgba[0] * 255), 
-        round(rgba[0] * 255), 
-        round(rgba[0] * 255), 
-        round(rgba[0] * 255)
+        round(rgba[1] * 255), 
+        round(rgba[2] * 255), 
+        round(rgba[3] * 255)
         )
 
 
