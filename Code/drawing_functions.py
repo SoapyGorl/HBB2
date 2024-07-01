@@ -1090,7 +1090,7 @@ class DrawCheckerboard():
             float one_tile_x = two_tiles_x / 2;
             float one_tile_y = two_tiles_y / 2;
             f_color = vec4(red1, green1, blue1, alpha1);
-            if((mod(uvs.x, two_tiles_x) < one_tile_x) ^^ (mod(uvs.y, two_tiles_y) < one_tile_y)) {
+            if ((mod(uvs.x, two_tiles_x) < one_tile_x) ^^ (mod(uvs.y, two_tiles_y) < one_tile_y)) {
                 f_color = vec4(red2, green2, blue2, alpha2);
             }
         }

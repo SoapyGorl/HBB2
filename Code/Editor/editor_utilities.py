@@ -1,4 +1,4 @@
-from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_text_height, get_time, str_can_be_int, str_can_be_float, str_can_be_hex, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
+from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, get_text_width, get_text_height, get_time, str_can_be_int, str_can_be_float, str_can_be_hex, switch_to_base10, base10_to_hex, add_characters_to_front_of_string, COLORS
 import math
 
 
@@ -711,3 +711,201 @@ class TextInput():
                 break
             first_loop = False
         return found_desired_character, space_index
+
+
+class CurrentlySelectedColor():
+    def __init__(self, color, palette_index, base_box_size):
+        #
+        # input parameters
+        self.color = color
+        self.color_max_saturation = color
+        self.color_min_saturation = color
+        self.color_max_alpha = color
+        self.color_no_alpha = color
+        self.palette_index = palette_index
+        self.palette_ltwh = [0, 0, base_box_size, base_box_size]
+        #
+        # mode of selection; palette/spectrum
+        self.selected_through_palette = False
+        #
+        # palette selection properties
+        self.outline1_color = COLORS['YELLOW']
+        self.outline1_thickness = 2
+        self.outline1_ltwh = [0, 0, base_box_size + (2 * self.outline1_thickness), base_box_size + (2 * self.outline1_thickness)]
+        self.outline2_color = COLORS['BLACK']
+        self.outline2_thickness = 4
+        self.outline2_ltwh = [0, 0, base_box_size + (2 * self.outline2_thickness), base_box_size + (2 * self.outline2_thickness)]
+        self.checker_pattern_repeat = 5
+        self.checker_color1 = COLORS['GREY']
+        self.checker_color2 = COLORS['WHITE']
+        #
+        # spectrum selection properties
+        self.red = 0.0
+        self.green = 0.0
+        self.blue = 0.0
+        self.saturation = 1.0
+        self.alpha = 1.0
+        self.calculate_color(0.0, 0.0, self.alpha)
+
+    def update_outline_ltwh(self):
+        self.outline1_ltwh[0] = self.palette_ltwh[0] - self.outline1_thickness
+        self.outline1_ltwh[1] = self.palette_ltwh[1] - self.outline1_thickness
+        self.outline2_ltwh[0] = self.palette_ltwh[0] - self.outline2_thickness
+        self.outline2_ltwh[1] = self.palette_ltwh[1] - self.outline2_thickness
+
+    def update_colors_with_saturation(self):
+        self.color_max_saturation = (self.red, self.green, self.blue, 1.0)
+        max_color = max([self.red, self.green, self.blue])
+        min_color = min([self.red, self.green, self.blue])
+        middle_color = ((max_color - min_color) / 2) + min_color
+        adjustment = (middle_color * (1 - self.saturation))
+        self.red = (self.red * self.saturation) + adjustment
+        self.green = (self.green * self.saturation) + adjustment
+        self.blue = (self.blue * self.saturation) + adjustment
+        self.color_min_saturation = (middle_color, middle_color, middle_color, 1.0)
+
+    def update_color(self):
+        self.color = (self.red, self.green, self.blue, self.alpha)
+        self.color_max_alpha = (self.red, self.green, self.blue, 1.0)
+        self.color_no_alpha = (self.red, self.green, self.blue, 0.0)
+
+    def calculate_color(self, spectrum_x, spectrum_y, alpha):
+        self.alpha = alpha
+        # in top half of spectrum
+        if 0 <= spectrum_y <= 0.5:
+            spectrum_y *= 2
+            # section 0 across
+            if (0 / 6) <= spectrum_x < (1 / 6):
+                spectrum_x = (spectrum_x - (0 / 6)) * 6
+                self.red = 1.0
+                self.green = 1 - ((1 - spectrum_x) * spectrum_y)
+                self.blue = (1 - spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 1 across
+            if (1 / 6) <= spectrum_x < (2 / 6):
+                spectrum_x = (spectrum_x - (1 / 6)) * 6
+                self.red = 1.0 - (spectrum_x * spectrum_y)
+                self.green = 1.0
+                self.blue = (1 - spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 2 across
+            if (2 / 6) <= spectrum_x < (3 / 6):
+                spectrum_x = (spectrum_x - (2 / 6)) * 6
+                self.red = (1.0 - spectrum_y)
+                self.green = 1.0
+                self.blue = 1.0 - ((1.0 - spectrum_x) * spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 3 across
+            if (3 / 6) <= spectrum_x < (4 / 6):
+                spectrum_x = (spectrum_x - (3 / 6)) * 6
+                self.red = (1.0 - spectrum_y)
+                self.green = 1.0 - (spectrum_x * spectrum_y)
+                self.blue = 1.0
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 4 across
+            if (4 / 6) <= spectrum_x < (5 / 6):
+                spectrum_x = (spectrum_x - (4 / 6)) * 6
+                self.red = 1.0 - ((1.0 - spectrum_x) * spectrum_y)
+                self.green = (1.0 - spectrum_y)
+                self.blue = 1.0
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 5 across
+            if (5 / 6) <= spectrum_x <= (6 / 6):
+                spectrum_x = (spectrum_x - (5 / 6)) * 6
+                self.red = 1.0
+                self.green = (1.0 - spectrum_y)
+                self.blue = 1.0 - (spectrum_x * spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+        # in bottom half of spectrum
+        else:
+            spectrum_y = (spectrum_y - 0.5) * 2
+            # section 0 across
+            if (0 / 6) <= spectrum_x < (1 / 6):
+                spectrum_x = (spectrum_x - (0 / 6)) * 6
+                self.red = (1.0 - spectrum_y)
+                self.green = spectrum_x * (1.0 - spectrum_y)
+                self.blue = 0.0
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 1 across
+            if (1 / 6) <= spectrum_x < (2 / 6):
+                spectrum_x = (spectrum_x - (1 / 6)) * 6
+                self.red = (1.0-spectrum_x) * (1.0-spectrum_y)
+                self.green = (1.0 - spectrum_y)
+                self.blue = 0.0
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 2 across
+            if (2 / 6) <= spectrum_x < (3 / 6):
+                spectrum_x = (spectrum_x - (2 / 6)) * 6
+                self.red = 0.0
+                self.green = (1.0 - spectrum_y)
+                self.blue = spectrum_x * (1.0 - spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 3 across
+            if (3 / 6) <= spectrum_x < (4 / 6):
+                spectrum_x = (spectrum_x - (3 / 6)) * 6
+                self.red = 0.0
+                self.green = (1.0-spectrum_x) * (1.0-spectrum_y)
+                self.blue = (1.0 - spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 4 across
+            if (4 / 6) <= spectrum_x < (5 / 6):
+                spectrum_x = (spectrum_x - (4 / 6)) * 6
+                self.red = spectrum_x * (1.0 - spectrum_y)
+                self.green = 0.0
+                self.blue = (1.0 - spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+            # section 5 across
+            if (5 / 6) <= spectrum_x <= (6 / 6):
+                spectrum_x = (spectrum_x - (5 / 6)) * 6
+                self.red = (1.0 - spectrum_y)
+                self.green = 0.0
+                self.blue = (1.0-spectrum_x) * (1.0-spectrum_y)
+                self.update_colors_with_saturation()
+                self.update_color()
+                return
+
+    def rgb_to_hsl(self, rgb: list[float]):
+        max_color = max([rgb[0], rgb[1], rgb[2]])
+        min_color = min([rgb[0], rgb[1], rgb[2]])
+        luminance = (max_color + min_color) / 2
+        chroma = max_color - min_color
+        if chroma == 0:
+            hue = 0
+            saturation = 0
+        else:
+            saturation = chroma / (1 - abs(2 * luminance - 1))
+            # red is biggest
+            if (rgb[0] >= rgb[1]) and (rgb[0] >= rgb[2]): # red is biggest
+                hue = (((rgb[1] - rgb[2]) / chroma) % 6) / 6
+            # green is biggest
+            if (rgb[1] >= rgb[0]) and (rgb[1] >= rgb[2]):
+                hue = ((rgb[2] - rgb[0]) / chroma + 2) / 6
+            # blue is biggest
+            if (rgb[2] >= rgb[0]) and (rgb[2] >= rgb[1]):
+                hue = ((rgb[0] - rgb[1]) / chroma + 4) / 6
+        hue = move_number_to_desired_range(0, hue, 1)
+        saturation = move_number_to_desired_range(0, saturation, 1)
+        luminance = move_number_to_desired_range(0, luminance, 1)
+        return [hue, saturation, luminance]

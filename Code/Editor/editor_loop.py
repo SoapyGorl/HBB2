@@ -1,7 +1,8 @@
 import math
+import random
 from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
-from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_palette
-from Code.Editor.editor_utilities import TextInput
+from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_add_color
+from Code.Editor.editor_utilities import TextInput, CurrentlySelectedColor
 
 
 class EditorSingleton():
@@ -47,17 +48,31 @@ class EditorSingleton():
         self.palette_border_color = COLORS['PINK']
         self.palette_background_color = COLORS['GREY']
         self.palette_colors_border_color = COLORS['BLACK']
-        self.palette_scroll_background_color = COLORS['BLACK']
-        self.palette_colors = [COLORS['RED'], COLORS['GREEN'], COLORS['BLUE'], COLORS['YELLOW'], COLORS['BLACK'], COLORS['WHITE'], COLORS['GREY'], rgba_to_glsl((0, 50, 0, 255)), rgba_to_glsl((0, 230, 0, 255))]
+        self.palette_colors = [rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), 
+                               rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), ]
         self.palette_colors_per_row = 5
         self.palette_padding = 5
         self.palette_color_wh = [35, 35]
         self.palette_space_between_colors_and_scroll = 8
-        self.palette_scroll_width = 22
+        self.palette_scroll_width = 20
         self.palette_color_border_thickness = 2
         self.palette_ltwh = [0, self.header_bottom, (2 * self.palette_padding) + (self.palette_colors_per_row * self.palette_color_wh[0]) + self.palette_space_between_colors_and_scroll + self.palette_scroll_width - (self.palette_color_border_thickness * (self.palette_colors_per_row) - 1), 0]
         self.currently_selected_color = CurrentlySelectedColor(self.palette_colors[0], 0, self.palette_color_wh[0])
         self.palette_pressed_add_or_remove_button_this_frame = False
+        # palette scroll bar
+        self.palette_scroll_background_color = COLORS['WHITE']
+        self.palette_scroll_outline_color = COLORS['BLUE']
+        self.palette_scroll_inside_unhighlighted = rgba_to_glsl((255, 255, 255, 255))
+        self.palette_scroll_inside_hightlighted = rgba_to_glsl((200, 200, 200, 255))
+        self.palette_scroll_inside_grabbed = rgba_to_glsl((150, 150, 150, 255))
+        self.palette_scroll_border_thickness = 4
+        self.palette_scroll_colors_height = 0
         #
         # separate palette and add color
         self.separate_palette_and_add_color_color = COLORS['BLUE']
@@ -158,429 +173,38 @@ class EditorSingleton():
                 self.add_color_spectrum_height - (2 * self.add_color_spectrum_border_thickness)]
 
 
-class CurrentlySelectedColor():
-    def __init__(self, color, palette_index, base_box_size):
-        #
-        # input parameters
-        self.color = color
-        self.color_max_saturation = color
-        self.color_min_saturation = color
-        self.color_max_alpha = color
-        self.color_no_alpha = color
-        self.palette_index = palette_index
-        self.palette_ltwh = [0, 0, base_box_size, base_box_size]
-        #
-        # mode of selection; palette/spectrum
-        self.selected_through_palette = False
-        #
-        # palette selection properties
-        self.outline1_color = COLORS['YELLOW']
-        self.outline1_thickness = 2
-        self.outline1_ltwh = [0, 0, base_box_size + (2 * self.outline1_thickness), base_box_size + (2 * self.outline1_thickness)]
-        self.outline2_color = COLORS['BLACK']
-        self.outline2_thickness = 4
-        self.outline2_ltwh = [0, 0, base_box_size + (2 * self.outline2_thickness), base_box_size + (2 * self.outline2_thickness)]
-        self.checker_pattern_repeat = 5
-        self.checker_color1 = COLORS['GREY']
-        self.checker_color2 = COLORS['WHITE']
-        #
-        # spectrum selection properties
-        self.red = 0.0
-        self.green = 0.0
-        self.blue = 0.0
-        self.saturation = 1.0
-        self.alpha = 1.0
-        self.calculate_color(0.0, 0.0, self.alpha)
-
-    def update_outline_ltwh(self):
-        self.outline1_ltwh[0] = self.palette_ltwh[0] - self.outline1_thickness
-        self.outline1_ltwh[1] = self.palette_ltwh[1] - self.outline1_thickness
-        self.outline2_ltwh[0] = self.palette_ltwh[0] - self.outline2_thickness
-        self.outline2_ltwh[1] = self.palette_ltwh[1] - self.outline2_thickness
-
-    def update_colors_with_saturation(self):
-        self.color_max_saturation = (self.red, self.green, self.blue, 1.0)
-        max_color = max([self.red, self.green, self.blue])
-        min_color = min([self.red, self.green, self.blue])
-        middle_color = ((max_color - min_color) / 2) + min_color
-        adjustment = (middle_color * (1 - self.saturation))
-        self.red = (self.red * self.saturation) + adjustment
-        self.green = (self.green * self.saturation) + adjustment
-        self.blue = (self.blue * self.saturation) + adjustment
-        self.color_min_saturation = (middle_color, middle_color, middle_color, 1.0)
-
-    def update_color(self):
-        self.color = (self.red, self.green, self.blue, self.alpha)
-        self.color_max_alpha = (self.red, self.green, self.blue, 1.0)
-        self.color_no_alpha = (self.red, self.green, self.blue, 0.0)
-
-    def calculate_color(self, spectrum_x, spectrum_y, alpha):
-        self.alpha = alpha
-        # in top half of spectrum
-        if 0 <= spectrum_y <= 0.5:
-            spectrum_y *= 2
-            # section 0 across
-            if (0 / 6) <= spectrum_x < (1 / 6):
-                spectrum_x = (spectrum_x - (0 / 6)) * 6
-                self.red = 1.0
-                self.green = 1 - ((1 - spectrum_x) * spectrum_y)
-                self.blue = (1 - spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 1 across
-            if (1 / 6) <= spectrum_x < (2 / 6):
-                spectrum_x = (spectrum_x - (1 / 6)) * 6
-                self.red = 1.0 - (spectrum_x * spectrum_y)
-                self.green = 1.0
-                self.blue = (1 - spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 2 across
-            if (2 / 6) <= spectrum_x < (3 / 6):
-                spectrum_x = (spectrum_x - (2 / 6)) * 6
-                self.red = (1.0 - spectrum_y)
-                self.green = 1.0
-                self.blue = 1.0 - ((1.0 - spectrum_x) * spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 3 across
-            if (3 / 6) <= spectrum_x < (4 / 6):
-                spectrum_x = (spectrum_x - (3 / 6)) * 6
-                self.red = (1.0 - spectrum_y)
-                self.green = 1.0 - (spectrum_x * spectrum_y)
-                self.blue = 1.0
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 4 across
-            if (4 / 6) <= spectrum_x < (5 / 6):
-                spectrum_x = (spectrum_x - (4 / 6)) * 6
-                self.red = 1.0 - ((1.0 - spectrum_x) * spectrum_y)
-                self.green = (1.0 - spectrum_y)
-                self.blue = 1.0
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 5 across
-            if (5 / 6) <= spectrum_x <= (6 / 6):
-                spectrum_x = (spectrum_x - (5 / 6)) * 6
-                self.red = 1.0
-                self.green = (1.0 - spectrum_y)
-                self.blue = 1.0 - (spectrum_x * spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-        # in bottom half of spectrum
-        else:
-            spectrum_y = (spectrum_y - 0.5) * 2
-            # section 0 across
-            if (0 / 6) <= spectrum_x < (1 / 6):
-                spectrum_x = (spectrum_x - (0 / 6)) * 6
-                self.red = (1.0 - spectrum_y)
-                self.green = spectrum_x * (1.0 - spectrum_y)
-                self.blue = 0.0
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 1 across
-            if (1 / 6) <= spectrum_x < (2 / 6):
-                spectrum_x = (spectrum_x - (1 / 6)) * 6
-                self.red = (1.0-spectrum_x) * (1.0-spectrum_y)
-                self.green = (1.0 - spectrum_y)
-                self.blue = 0.0
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 2 across
-            if (2 / 6) <= spectrum_x < (3 / 6):
-                spectrum_x = (spectrum_x - (2 / 6)) * 6
-                self.red = 0.0
-                self.green = (1.0 - spectrum_y)
-                self.blue = spectrum_x * (1.0 - spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 3 across
-            if (3 / 6) <= spectrum_x < (4 / 6):
-                spectrum_x = (spectrum_x - (3 / 6)) * 6
-                self.red = 0.0
-                self.green = (1.0-spectrum_x) * (1.0-spectrum_y)
-                self.blue = (1.0 - spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 4 across
-            if (4 / 6) <= spectrum_x < (5 / 6):
-                spectrum_x = (spectrum_x - (4 / 6)) * 6
-                self.red = spectrum_x * (1.0 - spectrum_y)
-                self.green = 0.0
-                self.blue = (1.0 - spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-            # section 5 across
-            if (5 / 6) <= spectrum_x <= (6 / 6):
-                spectrum_x = (spectrum_x - (5 / 6)) * 6
-                self.red = (1.0 - spectrum_y)
-                self.green = 0.0
-                self.blue = (1.0-spectrum_x) * (1.0-spectrum_y)
-                self.update_colors_with_saturation()
-                self.update_color()
-                return
-
-    def rgb_to_hsl(self, rgb: list[float]):
-        max_color = max([rgb[0], rgb[1], rgb[2]])
-        min_color = min([rgb[0], rgb[1], rgb[2]])
-        luminance = (max_color + min_color) / 2
-        chroma = max_color - min_color
-        if chroma == 0:
-            hue = 0
-            saturation = 0
-        else:
-            saturation = chroma / (1 - abs(2 * luminance - 1))
-            # red is biggest
-            if (rgb[0] >= rgb[1]) and (rgb[0] >= rgb[2]): # red is biggest
-                hue = (((rgb[1] - rgb[2]) / chroma) % 6) / 6
-            # green is biggest
-            if (rgb[1] >= rgb[0]) and (rgb[1] >= rgb[2]):
-                hue = ((rgb[2] - rgb[0]) / chroma + 2) / 6
-            # blue is biggest
-            if (rgb[2] >= rgb[0]) and (rgb[2] >= rgb[1]):
-                hue = ((rgb[0] - rgb[1]) / chroma + 4) / 6
-        hue = move_number_to_desired_range(0, hue, 1)
-        saturation = move_number_to_desired_range(0, saturation, 1)
-        luminance = move_number_to_desired_range(0, luminance, 1)
-        return [hue, saturation, luminance]
-
-
-def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
     #
-    # draw add color background
-    Singleton.add_color_ltwh[1] = Singleton.footer_ltwh[1] - Singleton.add_color_ltwh[3]
-    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.add_color_ltwh, Singleton.add_color_background_color)
+    # draw palette boundaries
+    Singleton.palette_ltwh[3] = Screen.height - Singleton.header_bottom - Singleton.add_color_ltwh[3] - Singleton.footer_ltwh[3] - Singleton.separate_palette_and_add_color_ltwh[3]
+    Render.draw_rectangle(Screen, gl_context, (0, Singleton.header_bottom, Singleton.palette_ltwh[2], Singleton.palette_ltwh[3]), Singleton.palette_padding, Singleton.palette_border_color, True, Singleton.palette_background_color, True)
     #
-    # add/remove color button
-    Singleton.palette_pressed_add_or_remove_button_this_frame = False
-    Singleton.add_color_words_background_ltwh[1] = Singleton.separate_palette_and_add_color_ltwh[1] + Singleton.separate_palette_and_add_color_ltwh[3] + Singleton.palette_padding
-    if Singleton.currently_selected_color.color[3] < 1:
-        Singleton.add_or_remove_checkerboard_ltwh[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness
-        Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_or_remove_checkerboard_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.add_or_remove_checkerboard_repeat, Singleton.add_or_remove_checkerboard_repeat)
-    Render.draw_rectangle(Screen, gl_context, Singleton.add_color_words_background_ltwh, Singleton.add_color_words_border_thickness, Singleton.add_color_words_border_color, True, Singleton.currently_selected_color.color, True)
-    # add color
-    if not Singleton.currently_selected_color.selected_through_palette:
-        Singleton.add_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
-        Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
-            Singleton.palette_pressed_add_or_remove_button_this_frame = True
+    # draw scroll
+    palette_scroll_background_ltwh = (Singleton.palette_ltwh[2] - Singleton.palette_padding - Singleton.palette_scroll_width, Singleton.palette_ltwh[1] + Singleton.palette_padding, Singleton.palette_scroll_width, Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding))
+    Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', palette_scroll_background_ltwh, Singleton.palette_scroll_background_color)
+    number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
+    height_for_palette_colors = number_of_palette_color_rows * Singleton.palette_color_wh[1]
+    print(height_for_palette_colors, Singleton.palette_ltwh[3])
+    if height_for_palette_colors > Singleton.palette_ltwh[3] + (2 * Singleton.palette_padding):
+        pass
+    #
+    # draw colors
+    for palette_color_index, palette_color in enumerate(Singleton.palette_colors):
+        column = palette_color_index % Singleton.palette_colors_per_row
+        row = palette_color_index // Singleton.palette_colors_per_row
+        color_left = Singleton.palette_ltwh[0] + Singleton.palette_padding + (column * Singleton.palette_color_wh[0]) - (column * Singleton.palette_color_border_thickness)
+        color_top = Singleton.palette_ltwh[1] + Singleton.palette_padding + (row * Singleton.palette_color_wh[1]) - (row * Singleton.palette_color_border_thickness)
+        color_ltwh = (color_left, color_top, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1])
+        if palette_color[3] < 1:
+            Render.checkerboard(Screen, gl_context, 'black_pixel', color_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
+        Render.draw_rectangle(Screen, gl_context, color_ltwh, Singleton.palette_color_border_thickness, Singleton.palette_colors_border_color, True, palette_color, True)
+        if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or ((Singleton.currently_selected_color.palette_index == palette_color_index) and Singleton.palette_pressed_add_or_remove_button_this_frame):
             Singleton.currently_selected_color.selected_through_palette = True
-            if Singleton.currently_selected_color.color in Singleton.palette_colors:
-                for index, color in enumerate(Singleton.palette_colors):
-                    if Singleton.currently_selected_color.color == color:
-                        Singleton.currently_selected_color.palette_index = index
-            else:
-                Singleton.palette_colors.append(Singleton.currently_selected_color.color)
-                Singleton.currently_selected_color.palette_index = len(Singleton.palette_colors) - 1
-    # remove color
-    if Singleton.currently_selected_color.selected_through_palette:
-        Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
-        Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
-            for _ in range(1):
-                Singleton.palette_pressed_add_or_remove_button_this_frame = True
-                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                if len(Singleton.palette_colors) == 0:
-                    Singleton.currently_selected_color.palette_index = -1
-                    Singleton.currently_selected_color.selected_through_palette = False
-                    break
-                if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors):
-                    Singleton.currently_selected_color.palette_index -= 1
-                    if len(Singleton.palette_colors) > 0:
-                        Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                    break
-                Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-    #
-    # RGBA spectrum
-    color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
-    Render.rgba_picker(Screen, gl_context, 'black_pixel', color_spectrum_ltwh, Singleton.currently_selected_color.saturation)
-    mouse_is_in_spectrum = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_spectrum_ltwh)
-    if mouse_is_in_spectrum and Keys.editor_primary.newly_pressed:
-        Singleton.add_color_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
-    if Singleton.add_color_circle_is_held:
-        spectrum_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - color_spectrum_ltwh[0]), color_spectrum_ltwh[2])
-        spectrum_y_pos = move_number_to_desired_range(0, (Keys.cursor_y_pos.value - color_spectrum_ltwh[1]), color_spectrum_ltwh[3])
-        mouse_in_top_half_of_spectrum = (spectrum_y_pos / color_spectrum_ltwh[3]) > 0.5
-        Singleton.add_color_current_circle_color = COLORS['WHITE'] if mouse_in_top_half_of_spectrum else COLORS['BLACK']
-        Singleton.add_color_circle_center_relative_xy = [spectrum_x_pos, spectrum_y_pos]
-        Singleton.add_color_spectrum_x_percentage = (spectrum_x_pos / color_spectrum_ltwh[2])
-        Singleton.add_color_spectrum_y_percentage = (spectrum_y_pos / color_spectrum_ltwh[3])
-        Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
-        # update text input displaying rgba and hex
-        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
-        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
-        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
-        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
-        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
-        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
-        if Keys.editor_primary.released:
-            Singleton.add_color_circle_is_held = False
-    Singleton.add_color_circle_ltwh[0] = color_spectrum_ltwh[0] + Singleton.add_color_circle_center_relative_xy[0] - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Singleton.add_color_circle_ltwh[1] = color_spectrum_ltwh[1] + Singleton.add_color_circle_center_relative_xy[1] - (Render.renderable_objects['editor_circle'].ORIGINAL_HEIGHT // 2)
-    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_circle_ltwh, Singleton.add_color_current_circle_color)
-    #
-    # RGBA saturation
-    Singleton.add_color_saturation_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3]
-    Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_saturation_ltwh, Singleton.currently_selected_color.color_min_saturation, Singleton.currently_selected_color.color_max_saturation)
-    mouse_is_in_saturation = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_saturation_ltwh)
-    if mouse_is_in_saturation and Keys.editor_primary.newly_pressed and not Singleton.add_color_circle_is_held:
-        Singleton.add_color_saturation_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
-    if Singleton.add_color_saturation_circle_is_held:
-        saturation_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - Singleton.add_color_saturation_ltwh[0]), color_spectrum_ltwh[2])
-        Singleton.add_color_saturation_circle_relative_x = saturation_x_pos
-        Singleton.currently_selected_color.saturation = Singleton.add_color_saturation_circle_relative_x / color_spectrum_ltwh[2]
-        Singleton.add_color_saturation_percentage = (saturation_x_pos / color_spectrum_ltwh[2])
-        Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
-        # update text input displaying rgba and hex
-        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
-        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
-        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
-        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
-        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
-        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
-        if Keys.editor_primary.released:
-            Singleton.add_color_saturation_circle_is_held = False
-    Singleton.add_color_saturation_circle_ltwh[0] = Singleton.add_color_saturation_ltwh[0] + Singleton.add_color_saturation_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Singleton.add_color_saturation_circle_ltwh[1] = Singleton.add_color_saturation_ltwh[1] + (Singleton.add_color_saturation_ltwh[3] // 2) - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_saturation_circle_ltwh, Singleton.add_color_current_circle_color)
-    #
-    # RGBA alpha
-    Singleton.add_color_alpha_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3] + Singleton.add_color_saturation_ltwh[3]
-    Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.add_color_alpha_checker_color1, Singleton.add_color_alpha_checker_color2, Singleton.add_color_alpha_checker_x, Singleton.add_color_alpha_checker_y)
-    Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.currently_selected_color.color_no_alpha, Singleton.currently_selected_color.color_max_alpha)
-    mouse_is_in_alpha = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_alpha_ltwh)
-    if mouse_is_in_alpha and Keys.editor_primary.newly_pressed and not Singleton.add_color_saturation_circle_is_held:
-        Singleton.add_color_alpha_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
-    if Singleton.add_color_alpha_circle_is_held:
-        alpha_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - Singleton.add_color_alpha_ltwh[0]), color_spectrum_ltwh[2])
-        Singleton.add_color_alpha_circle_relative_x = alpha_x_pos
-        Singleton.currently_selected_color.alpha = Singleton.add_color_alpha_circle_relative_x / color_spectrum_ltwh[2]
-        Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
-        Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
-        # update text input displaying rgba and hex
-        red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
-        Singleton.add_color_dynamic_inputs[0].current_string = str(red)
-        Singleton.add_color_dynamic_inputs[1].current_string = str(green)
-        Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
-        Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
-        Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
-        if Keys.editor_primary.released:
-            Singleton.add_color_alpha_circle_is_held = False
-    Singleton.add_color_alpha_circle_ltwh[0] = Singleton.add_color_alpha_ltwh[0] + Singleton.add_color_alpha_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Singleton.add_color_alpha_circle_ltwh[1] = Singleton.add_color_alpha_ltwh[1] + (Singleton.add_color_alpha_ltwh[3] // 2) - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
-    Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_alpha_circle_ltwh, Singleton.add_color_current_circle_color)
-    #
-    # RBGA spectrum border
-    spectrum_border_ltwh = [color_spectrum_ltwh[0] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[1] - Singleton.add_color_spectrum_border_thickness, color_spectrum_ltwh[2] + (2 * Singleton.add_color_spectrum_border_thickness), color_spectrum_ltwh[3] + (2 * Singleton.add_color_spectrum_border_thickness) + Singleton.add_color_saturation_ltwh[3] + Singleton.add_color_alpha_ltwh[3]]
-    Render.draw_rectangle(Screen, gl_context, spectrum_border_ltwh, Singleton.add_color_spectrum_border_thickness, Singleton.add_color_spectrum_border_color, True, COLORS['DEFAULT'], False)
-    #
-    # RGBA inputs
-    attempt_to_update_selected_color = False
-    changed_value_is_rgba = False
-    changed_value_is_hex = False
-    Singleton.add_color_rgba_updated_this_frame = False
-    Singleton.add_color_input_top = spectrum_border_ltwh[1] + spectrum_border_ltwh[3]
-    current_character_top = Singleton.add_color_input_top + Singleton.add_color_input_space_between_inputs
-    # manage tab / shift tab
-    initial_move_down = (Keys.editor_tab.newly_pressed and not Keys.editor_shift.pressed)
-    initial_move_up = (Keys.editor_tab.newly_pressed and Keys.editor_shift.newly_pressed) or (Keys.editor_tab.newly_pressed and Keys.editor_shift.pressed) or (Keys.editor_tab.pressed and Keys.editor_shift.newly_pressed)
-    if initial_move_down or initial_move_up:
-        Singleton.add_color_input_moving_down = True if initial_move_down else False
-        Singleton.add_color_input_initial_fast_move = get_time()
-    if Keys.editor_tab.pressed:
-        current_time = get_time()
-        moving_this_frame = (initial_move_down or initial_move_up or ((current_time - Singleton.add_color_input_initial_fast_move > Singleton.add_color_input_time_before_fast_move) and (current_time - Singleton.add_color_input_last_move_time > Singleton.add_color_input_time_between_moves)))
-        if moving_this_frame:
-            Singleton.add_color_input_last_move_time = get_time()
-            old_selected_index = -1
-            for index, text_input in enumerate(Singleton.add_color_dynamic_inputs):
-                if text_input.currently_selected:
-                    attempt_to_update_selected_color = True
-                    if 0 <= index <= 3:
-                        changed_value_is_rgba = True
-                    if index == 4:
-                        changed_value_is_hex = True
-                    old_selected_index = index
-                    text_input.deselect_box()
-            if old_selected_index != -1:
-                if Singleton.add_color_input_moving_down:
-                    newly_selected_index = (old_selected_index + 1) % len(Singleton.add_color_inputs)
-                if not Singleton.add_color_input_moving_down:
-                    newly_selected_index = (old_selected_index - 1) % len(Singleton.add_color_inputs)
-                Singleton.add_color_dynamic_inputs[newly_selected_index].currently_selected = True
-                Singleton.add_color_dynamic_inputs[newly_selected_index].highlighted_index_range = [0, len(Singleton.add_color_dynamic_inputs[newly_selected_index].current_string)]
-                Singleton.add_color_dynamic_inputs[newly_selected_index].currently_highlighting = True
-                Singleton.add_color_dynamic_inputs[newly_selected_index].selected_index = len(Singleton.add_color_dynamic_inputs[newly_selected_index].current_string)
-    # update text input objects
-    text_offset_y = -Singleton.add_color_dynamic_inputs[0].text_padding / 2
-    for index, input_character in enumerate(Singleton.add_color_inputs[:4]):
-        Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
-        Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
-        Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
-        if not attempt_to_update_selected_color:
-            attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
-            if attempt_to_update_selected_color:
-                changed_value_is_rgba = True
-        current_character_top += Singleton.add_color_input_single_input_height
-    # HEX
-    index, characters = 4, Singleton.add_color_inputs[4]
-    Render.draw_string_of_characters(Screen, gl_context, characters, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
-    Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
-    if not attempt_to_update_selected_color:
-        attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
-        if attempt_to_update_selected_color:
-            changed_value_is_hex = True
-    # update currently selected color
-    if attempt_to_update_selected_color:
-        Singleton.currently_selected_color.selected_through_palette = False
-        change_spectrum_to_new_color = False
-        if changed_value_is_rgba:
-            all_are_valid = True
-            for text_input in Singleton.add_color_dynamic_inputs[:4]:
-                if not text_input.is_valid():
-                    all_are_valid = False
-            if all_are_valid:
-                red = round(float(Singleton.add_color_dynamic_inputs[0].current_string))
-                green = round(float(Singleton.add_color_dynamic_inputs[1].current_string))
-                blue = round(float(Singleton.add_color_dynamic_inputs[2].current_string))
-                alpha = round(float(Singleton.add_color_dynamic_inputs[3].current_string))
-                new_color = rgba_to_glsl((red, green, blue, alpha))
-                Singleton.add_color_dynamic_inputs[4].current_string = f'{base10_to_hex(red)}{base10_to_hex(green)}{base10_to_hex(blue)}{base10_to_hex(alpha)}'
-                change_spectrum_to_new_color = True
-        if changed_value_is_hex:
-            if Singleton.add_color_dynamic_inputs[4].is_valid():
-                hex_string = add_characters_to_front_of_string(Singleton.add_color_dynamic_inputs[4].current_string, 8, '0')
-                red = switch_to_base10(hex_string[0:2], 16)
-                green = switch_to_base10(hex_string[2:4], 16)
-                blue = switch_to_base10(hex_string[4:6], 16)
-                alpha = switch_to_base10(hex_string[6:8], 16)
-                new_color = rgba_to_glsl((red, green, blue, alpha))
-                Singleton.add_color_dynamic_inputs[0].current_string = str(red)
-                Singleton.add_color_dynamic_inputs[1].current_string = str(green)
-                Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
-                Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
-                change_spectrum_to_new_color = True
-        # change to new color
-        if change_spectrum_to_new_color:
+            Singleton.currently_selected_color.color = palette_color
+            Singleton.currently_selected_color.palette_index = palette_color_index
             # update spectrum based on palette selection
-            Singleton.add_color_spectrum_x_percentage, Singleton.add_color_saturation_percentage, Singleton.add_color_spectrum_y_percentage = Singleton.currently_selected_color.rgb_to_hsl(new_color)
-            Singleton.add_color_alpha_percentage = new_color[3]
+            Singleton.add_color_spectrum_x_percentage, Singleton.add_color_saturation_percentage, Singleton.add_color_spectrum_y_percentage = Singleton.currently_selected_color.rgb_to_hsl(Singleton.currently_selected_color.color)
+            Singleton.add_color_alpha_percentage = Singleton.currently_selected_color.color[3]
             color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
             # update spectrum
             spectrum_x_pos = move_number_to_desired_range(0, Singleton.add_color_spectrum_x_percentage * color_spectrum_ltwh[2], color_spectrum_ltwh[2])
@@ -602,7 +226,23 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             Singleton.add_color_alpha_percentage = (alpha_x_pos / color_spectrum_ltwh[2])
             # update the currently selected color
             Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
-
+            # update text input displaying rgba and hex
+            red, green, blue, alpha = [color_component for color_component in percent_to_rgba((Singleton.currently_selected_color.color))]
+            Singleton.add_color_dynamic_inputs[0].current_string = str(red)
+            Singleton.add_color_dynamic_inputs[1].current_string = str(green)
+            Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
+            Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
+            Singleton.add_color_dynamic_inputs[4].current_string = f'{add_characters_to_front_of_string(base10_to_hex(red), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(green), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(blue), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(alpha), 2, "0")}'
+        if (Singleton.currently_selected_color.palette_index == palette_color_index):
+            Singleton.currently_selected_color.palette_ltwh[0] = color_ltwh[0]
+            Singleton.currently_selected_color.palette_ltwh[1] = color_ltwh[1]
+            Singleton.currently_selected_color.update_outline_ltwh()
+    #
+    # draw selected palette color outline
+    if Singleton.currently_selected_color.selected_through_palette and len(Singleton.palette_colors) > 0:
+        Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline2_color)
+        Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
+        Render.draw_rectangle(Screen, gl_context, Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
 
 
 def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
