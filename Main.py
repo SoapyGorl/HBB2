@@ -6,7 +6,7 @@ if __name__ == '__main__':
     #
     # initialize time and keys
     from Code.application_setup import application_setup
-    Time, Keys = application_setup()
+    Time, Keys, Cursor = application_setup()
     #
     # initialize visuals
     from Code.drawing_functions import initialize_display
@@ -22,4 +22,4 @@ if __name__ == '__main__':
     #
     # game loop
     from Code.application_loop import application_loop
-    application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys)
+    application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)

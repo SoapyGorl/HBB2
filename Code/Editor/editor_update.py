@@ -2,7 +2,7 @@ import math
 from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, percent_to_rgba, base10_to_hex, add_characters_to_front_of_string, get_time, switch_to_base10, rgba_to_glsl, COLORS
 
 
-def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # header banner
     header_ltwh = (0, 0, Screen.width, Singleton.header_height)
@@ -50,14 +50,14 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (0, Singleton.header_height, Screen.width, Singleton.header_border_thickness), Singleton.header_border_color)
 
 
-def update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # footer bar
     Singleton.footer_ltwh = [0, Screen.height - Singleton.footer_ltwh[3], Screen.width, Singleton.footer_ltwh[3]]
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.footer_ltwh, Singleton.footer_color)
 
 
-def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # draw add color background
     Singleton.add_color_ltwh[1] = Singleton.footer_ltwh[1] - Singleton.add_color_ltwh[3]
@@ -305,14 +305,14 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             Singleton.currently_selected_color.calculate_color(Singleton.add_color_spectrum_x_percentage, Singleton.add_color_spectrum_y_percentage, Singleton.add_color_alpha_percentage)
 
 
-def update_separate_palette_and_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_separate_palette_and_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # draw separate palette and add color
     Singleton.separate_palette_and_add_color_ltwh[1] = Singleton.add_color_ltwh[1] - Singleton.separate_palette_and_add_color_ltwh[3]
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.separate_palette_and_add_color_ltwh, Singleton.separate_palette_and_add_color_color)
 
 
-def update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # draw bool bar background
     Singleton.tool_bar_ltwh[0] = Screen.width - Singleton.tool_bar_ltwh[2]

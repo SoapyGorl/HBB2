@@ -173,7 +173,7 @@ class EditorSingleton():
                 self.add_color_spectrum_height - (2 * self.add_color_spectrum_border_thickness)]
 
 
-def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys):
+def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
     # draw palette boundaries
     Singleton.palette_ltwh[3] = Screen.height - Singleton.header_bottom - Singleton.add_color_ltwh[3] - Singleton.footer_ltwh[3] - Singleton.separate_palette_and_add_color_ltwh[3]
@@ -245,7 +245,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
         Render.draw_rectangle(Screen, gl_context, Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
 
 
-def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
+def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     if Api.setup_required:
         loading_and_unloading_images_manager(Screen, Render, gl_context, IMAGE_PATHS, [LOADED_IN_EDITOR], [])
         Api.api_initiated_singletons['Editor'] = Api.api_singletons['Editor'](Render)
@@ -253,9 +253,9 @@ def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
     #
     else:
         Singleton = Api.api_initiated_singletons[Api.current_api]
-        update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
-        update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
-        update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
-        update_separate_palette_and_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
-        update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
-        update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys)
+        update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
+        update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
+        update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
+        update_separate_palette_and_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
+        update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
+        update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)

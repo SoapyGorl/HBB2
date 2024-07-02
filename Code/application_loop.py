@@ -19,7 +19,7 @@ def update_events(Screen):
             Screen.display = pygame.Surface((Screen.width, Screen.height))
 
 
-def application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
+def application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     while True:
         #
         # update events
@@ -29,7 +29,7 @@ def application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys):
         Keys.update_controls()
         #
         # operate current API (e.g. Editor, Game, Menu)
-        Api.api_options[Api.current_api](Api, PATH, Screen, gl_context, Render, Time, Keys)
+        Api.api_options[Api.current_api](Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
         #
         # update screen
         Screen.update()

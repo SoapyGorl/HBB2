@@ -14,22 +14,28 @@ def application_setup():
     # keys
     Keys = KeysClass()
     #
-    return Time, Keys
+    # cursor
+    Cursor = CursorClass()
+    #
+    return Time, Keys, Cursor
 
 
 class ApiObject():
+    _EDITOR = 'Editor'
+    _GAME = 'Game'
+    _MENU = 'Menu'
     def __init__(self, Render):
         self.setup_required = True
-        self.current_api = 'Editor'
-        self.api_options = {'Editor': editor_loop,
-                            'Game': False, 
-                            'Menu': False,}
-        self.api_singletons = {'Editor': EditorSingleton,
-                               'Game': False, 
-                               'Menu': False,}
-        self.api_initiated_singletons = {'Editor': 0,
-                                         'Game': 0, 
-                                         'Menu': 0,}
+        self.current_api = self._EDITOR
+        self.api_options = {self._EDITOR: editor_loop,
+                            self._GAME: False, 
+                            self._MENU: False,}
+        self.api_singletons = {self._EDITOR: EditorSingleton,
+                               self._GAME: False, 
+                               self._MENU: False,}
+        self.api_initiated_singletons = {self._EDITOR: 0,
+                                         self._GAME: 0, 
+                                         self._MENU: 0,}
 
 
 class TimingClass():
@@ -48,6 +54,66 @@ class TimingClass():
         self.delta_time = move_number_to_desired_range(0.001, self.delta_time, 99999999999)
         self.fps = 1 / self.delta_time
         self.clock.tick(self.desired_fps)
+
+
+class CursorClass():
+    def __init__(self):
+        self.cursors = {
+            # built-in cursors
+            'arrow': pygame.SYSTEM_CURSOR_ARROW,
+            'i_beam': pygame.SYSTEM_CURSOR_IBEAM,
+            'wait': pygame.SYSTEM_CURSOR_WAIT,
+            'crosshair': pygame.SYSTEM_CURSOR_CROSSHAIR,
+            'wait_arrow': pygame.SYSTEM_CURSOR_WAITARROW,
+            'arrow_nw_se': pygame.SYSTEM_CURSOR_SIZENWSE,
+            'arrow_ne_sw': pygame.SYSTEM_CURSOR_SIZENESW,
+            'arrow_w_e': pygame.SYSTEM_CURSOR_SIZEWE,
+            'arrow_n_s': pygame.SYSTEM_CURSOR_SIZENS,
+            'arrow_four_point': pygame.SYSTEM_CURSOR_SIZEALL,
+            'slash': pygame.SYSTEM_CURSOR_NO,
+            'hand': pygame.SYSTEM_CURSOR_HAND,
+            }
+        self.custom_cursors = {
+            # custom cursors
+            'custom_arrow': 0,
+            'custom_i_beam': 0,
+            'custom_wait': 0,
+            'custom_crosshair': 0,
+            'custom_wait_arrow': 0,
+            'custom_arrow_nw_se': 0,
+            'custom_arrow_ne_sw': 0,
+            'custom_arrow_w_e': 0,
+            'custom_arrow_n_s': 0,
+            'custom_arrow_four_point': 0,
+            'custom_slash': 0,
+            'custom_hand': 0,
+            # unique
+            'crosshair': 0
+            }
+        self.current_cursor = 'arrow'
+        self.update_cursor('arrow')
+    #
+    def update_cursor(self, new_cursor: str):
+        if self.current_cursor == new_cursor:
+            return
+        self.current_cursor = new_cursor
+        # built-in cursors
+        if self.cursors.get(new_cursor) is not None:
+            if not self.cursor_is_visible():
+                self.set_cursor_visibility(True)
+            pygame.mouse.set_cursor(self.cursors[new_cursor])
+        # custom cursors
+        if self.custom_cursors.get(new_cursor) is not None:
+            if self.cursor_is_visible:
+                self.set_cursor_visibility(False)
+    #
+    @staticmethod
+    def set_cursor_visibility(visible: bool):
+        pygame.mouse.set_visible(visible)
+    #
+    @staticmethod
+    def cursor_is_visible():
+        return pygame.mouse.get_visible()
 
 
 class IOKey():
