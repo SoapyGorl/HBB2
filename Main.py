@@ -7,6 +7,7 @@ if __name__ == '__main__':
     # initialize time and keys
     from Code.application_setup import application_setup
     Time, Keys, Cursor = application_setup()
+    Cursor.set_cursor_visibility(False)
     #
     # initialize visuals
     from Code.drawing_functions import initialize_display

@@ -246,6 +246,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
 
 
 def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
+    Cursor.add_cursor_this_frame('cursor_arrow')
     if Api.setup_required:
         loading_and_unloading_images_manager(Screen, Render, gl_context, IMAGE_PATHS, [LOADED_IN_EDITOR], [])
         Api.api_initiated_singletons['Editor'] = Api.api_singletons['Editor'](Render)

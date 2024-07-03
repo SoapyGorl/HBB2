@@ -107,9 +107,11 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
     Render.rgba_picker(Screen, gl_context, 'black_pixel', color_spectrum_ltwh, Singleton.currently_selected_color.saturation)
     mouse_is_in_spectrum = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_spectrum_ltwh)
-    if mouse_is_in_spectrum and Keys.editor_primary.newly_pressed:
-        Singleton.add_color_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
+    if mouse_is_in_spectrum:
+        Cursor.add_cursor_this_frame('cursor_eyedrop')
+        if Keys.editor_primary.newly_pressed:
+            Singleton.add_color_circle_is_held = True
+            Singleton.currently_selected_color.selected_through_palette = False
     if Singleton.add_color_circle_is_held:
         spectrum_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - color_spectrum_ltwh[0]), color_spectrum_ltwh[2])
         spectrum_y_pos = move_number_to_desired_range(0, (Keys.cursor_y_pos.value - color_spectrum_ltwh[1]), color_spectrum_ltwh[3])
@@ -136,9 +138,11 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Singleton.add_color_saturation_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3]
     Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_saturation_ltwh, Singleton.currently_selected_color.color_min_saturation, Singleton.currently_selected_color.color_max_saturation)
     mouse_is_in_saturation = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_saturation_ltwh)
-    if mouse_is_in_saturation and Keys.editor_primary.newly_pressed and not Singleton.add_color_circle_is_held:
-        Singleton.add_color_saturation_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
+    if mouse_is_in_saturation:
+        Cursor.add_cursor_this_frame('cursor_eyedrop')
+        if Keys.editor_primary.newly_pressed and not Singleton.add_color_circle_is_held:
+            Singleton.add_color_saturation_circle_is_held = True
+            Singleton.currently_selected_color.selected_through_palette = False
     if Singleton.add_color_saturation_circle_is_held:
         saturation_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - Singleton.add_color_saturation_ltwh[0]), color_spectrum_ltwh[2])
         Singleton.add_color_saturation_circle_relative_x = saturation_x_pos
@@ -163,9 +167,11 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.add_color_alpha_checker_color1, Singleton.add_color_alpha_checker_color2, Singleton.add_color_alpha_checker_x, Singleton.add_color_alpha_checker_y)
     Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.currently_selected_color.color_no_alpha, Singleton.currently_selected_color.color_max_alpha)
     mouse_is_in_alpha = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_alpha_ltwh)
-    if mouse_is_in_alpha and Keys.editor_primary.newly_pressed and not Singleton.add_color_saturation_circle_is_held:
-        Singleton.add_color_alpha_circle_is_held = True
-        Singleton.currently_selected_color.selected_through_palette = False
+    if mouse_is_in_alpha:
+        Cursor.add_cursor_this_frame('cursor_eyedrop')
+        if Keys.editor_primary.newly_pressed and not Singleton.add_color_saturation_circle_is_held:
+            Singleton.add_color_alpha_circle_is_held = True
+            Singleton.currently_selected_color.selected_through_palette = False
     if Singleton.add_color_alpha_circle_is_held:
         alpha_x_pos = move_number_to_desired_range(0, (Keys.cursor_x_pos.value - Singleton.add_color_alpha_ltwh[0]), color_spectrum_ltwh[2])
         Singleton.add_color_alpha_circle_relative_x = alpha_x_pos

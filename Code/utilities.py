@@ -221,6 +221,10 @@ IMAGE_PATHS = {
     ';': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\semi_colon.png'],
     '_': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\underscore.png'],
     '#': [[ALWAYS_LOADED], PATH + '\\Images\\always_loaded\\symbols\\pound.png'],
+    # cursors
+    'cursor_arrow': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_arrow.png'],
+    'cursor_crosshair': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_crosshair.png'],
+    'cursor_eyedrop': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_eyedrop.png'],
     # common
     'editor_circle': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\editor\\common\\circle.png'],
     # editor tools on right side of screen

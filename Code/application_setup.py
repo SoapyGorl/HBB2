@@ -59,53 +59,30 @@ class TimingClass():
 class CursorClass():
     def __init__(self):
         self.cursors = {
-            # built-in cursors
-            'arrow': pygame.SYSTEM_CURSOR_ARROW,
-            'i_beam': pygame.SYSTEM_CURSOR_IBEAM,
-            'wait': pygame.SYSTEM_CURSOR_WAIT,
-            'crosshair': pygame.SYSTEM_CURSOR_CROSSHAIR,
-            'wait_arrow': pygame.SYSTEM_CURSOR_WAITARROW,
-            'arrow_nw_se': pygame.SYSTEM_CURSOR_SIZENWSE,
-            'arrow_ne_sw': pygame.SYSTEM_CURSOR_SIZENESW,
-            'arrow_w_e': pygame.SYSTEM_CURSOR_SIZEWE,
-            'arrow_n_s': pygame.SYSTEM_CURSOR_SIZENS,
-            'arrow_four_point': pygame.SYSTEM_CURSOR_SIZEALL,
-            'slash': pygame.SYSTEM_CURSOR_NO,
-            'hand': pygame.SYSTEM_CURSOR_HAND,
+            # [offset_x, offset_y, priority]
+            'cursor_arrow': [0, 0, 1],
+            'cursor_crosshair': [-3, -3, 5],
+            'cursor_eyedrop': [0, -21, 5]
             }
-        self.custom_cursors = {
-            # custom cursors
-            'custom_arrow': 0,
-            'custom_i_beam': 0,
-            'custom_wait': 0,
-            'custom_crosshair': 0,
-            'custom_wait_arrow': 0,
-            'custom_arrow_nw_se': 0,
-            'custom_arrow_ne_sw': 0,
-            'custom_arrow_w_e': 0,
-            'custom_arrow_n_s': 0,
-            'custom_arrow_four_point': 0,
-            'custom_slash': 0,
-            'custom_hand': 0,
-            # unique
-            'crosshair': 0
-            }
-        self.current_cursor = 'arrow'
-        self.update_cursor('arrow')
+        self.current_cursor = ['', 0]
     #
-    def update_cursor(self, new_cursor: str):
-        if self.current_cursor == new_cursor:
-            return
-        self.current_cursor = new_cursor
-        # built-in cursors
-        if self.cursors.get(new_cursor) is not None:
-            if not self.cursor_is_visible():
-                self.set_cursor_visibility(True)
-            pygame.mouse.set_cursor(self.cursors[new_cursor])
-        # custom cursors
-        if self.custom_cursors.get(new_cursor) is not None:
-            if self.cursor_is_visible:
-                self.set_cursor_visibility(False)
+    def update_cursor(self, Screen, gl_context, Render, Keys):
+        ltwh = [
+            Keys.cursor_x_pos.value + self.cursors[self.current_cursor[0]][0],
+            Keys.cursor_y_pos.value + self.cursors[self.current_cursor[0]][1],
+            Render.renderable_objects[self.current_cursor[0]].ORIGINAL_WIDTH,
+            Render.renderable_objects[self.current_cursor[0]].ORIGINAL_HEIGHT
+        ]
+        Render.basic_rect_ltwh_to_quad(Screen, gl_context, self.current_cursor[0], ltwh)
+        self.reset_current_cursor()
+    #
+    def add_cursor_this_frame(self, added_cursor: str):
+        # if priority of the added cursor is higher than the priority of the current highest priority cursor
+        if self.cursors[added_cursor][2] > self.current_cursor[1]:
+            self.current_cursor = [added_cursor, self.cursors[added_cursor][2]]
+    #
+    def reset_current_cursor(self):
+        self.current_cursor = ['', 0]
     #
     @staticmethod
     def set_cursor_visibility(visible: bool):

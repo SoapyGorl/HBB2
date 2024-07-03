@@ -31,6 +31,9 @@ def application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
         # operate current API (e.g. Editor, Game, Menu)
         Api.api_options[Api.current_api](Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
         #
+        # update cursor
+        Cursor.update_cursor(Screen, gl_context, Render, Keys)
+        #
         # update screen
         Screen.update()
         Render.clear_buffer(gl_context)
