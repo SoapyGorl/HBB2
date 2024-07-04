@@ -52,6 +52,15 @@ def point_is_in_ltwh(px: (float | int), py: (float | int), ltwh: list[(float | i
     return (ltwh[0] <= px <= ltwh[0] + ltwh[2]) and (ltwh[1] <= py <= ltwh[1] + ltwh[3])
 
 
+def get_rect_minus_borders(ltwh: list[(float | int), (float | int), (float | int), (float | int)], border_size: float | int):
+    return [
+        ltwh[0] + border_size,
+        ltwh[1] + border_size,
+        ltwh[2] - (2 * border_size),
+        ltwh[3] - (2 * border_size)
+        ]
+
+
 def move_number_to_desired_range(low: (float | int), number: (float | int), high: (float | int)):
     if number < low:
         number = low
