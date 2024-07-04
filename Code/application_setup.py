@@ -62,18 +62,13 @@ class CursorClass():
             # [offset_x, offset_y, priority]
             'cursor_arrow': [0, 0, 1],
             'cursor_crosshair': [-3, -3, 5],
-            'cursor_eyedrop': [0, -21, 5]
+            'cursor_eyedrop': [0, -21, 6]
             }
         self.current_cursor = ['', 0]
+        self.reset_current_cursor()
     #
     def update_cursor(self, Screen, gl_context, Render, Keys):
-        ltwh = [
-            Keys.cursor_x_pos.value + self.cursors[self.current_cursor[0]][0],
-            Keys.cursor_y_pos.value + self.cursors[self.current_cursor[0]][1],
-            Render.renderable_objects[self.current_cursor[0]].ORIGINAL_WIDTH,
-            Render.renderable_objects[self.current_cursor[0]].ORIGINAL_HEIGHT
-        ]
-        Render.basic_rect_ltwh_to_quad(Screen, gl_context, self.current_cursor[0], ltwh)
+        Render.basic_rect_ltwh_to_quad(Screen, gl_context, self.current_cursor[0], [Keys.cursor_x_pos.value + self.cursors[self.current_cursor[0]][0], Keys.cursor_y_pos.value + self.cursors[self.current_cursor[0]][1], Render.renderable_objects[self.current_cursor[0]].ORIGINAL_WIDTH, Render.renderable_objects[self.current_cursor[0]].ORIGINAL_HEIGHT])
         self.reset_current_cursor()
     #
     def add_cursor_this_frame(self, added_cursor: str):

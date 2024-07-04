@@ -61,18 +61,21 @@ class EditorSingleton():
         self.palette_color_wh = [35, 35]
         self.palette_space_between_colors_and_scroll = 8
         self.palette_scroll_width = 20
+        self.palette_scroll_height = 50
         self.palette_color_border_thickness = 2
         self.palette_ltwh = [0, self.header_bottom, (2 * self.palette_padding) + (self.palette_colors_per_row * self.palette_color_wh[0]) + self.palette_space_between_colors_and_scroll + self.palette_scroll_width - (self.palette_color_border_thickness * (self.palette_colors_per_row) - 1), 0]
         self.currently_selected_color = CurrentlySelectedColor(self.palette_colors[0], 0, self.palette_color_wh[0])
         self.palette_pressed_add_or_remove_button_this_frame = False
         # palette scroll bar
         self.palette_scroll_background_color = COLORS['WHITE']
-        self.palette_scroll_outline_color = COLORS['BLUE']
+        self.palette_scroll_border_color = COLORS['BLUE']
         self.palette_scroll_inside_unhighlighted = rgba_to_glsl((255, 255, 255, 255))
         self.palette_scroll_inside_hightlighted = rgba_to_glsl((200, 200, 200, 255))
         self.palette_scroll_inside_grabbed = rgba_to_glsl((150, 150, 150, 255))
         self.palette_scroll_border_thickness = 4
-        self.palette_scroll_colors_height = 0
+        self.palette_scroll_is_grabbed = False
+        self.palette_scroll_ltwh = [self.palette_ltwh[2] - self.palette_padding - self.palette_scroll_width, 0, self.palette_scroll_width, self.palette_scroll_height]
+        self.palette_scroll_percentage = 0.0
         #
         # separate palette and add color
         self.separate_palette_and_add_color_color = COLORS['BLUE']
@@ -183,10 +186,39 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
     palette_scroll_background_ltwh = (Singleton.palette_ltwh[2] - Singleton.palette_padding - Singleton.palette_scroll_width, Singleton.palette_ltwh[1] + Singleton.palette_padding, Singleton.palette_scroll_width, Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding))
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', palette_scroll_background_ltwh, Singleton.palette_scroll_background_color)
     number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
-    height_for_palette_colors = number_of_palette_color_rows * Singleton.palette_color_wh[1]
-    print(height_for_palette_colors, Singleton.palette_ltwh[3])
-    if height_for_palette_colors > Singleton.palette_ltwh[3] + (2 * Singleton.palette_padding):
-        pass
+    height_for_palette_colors = (number_of_palette_color_rows * (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)) + Singleton.palette_color_border_thickness
+    space_available_for_palette_colors = Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding)
+    palette_scroll_is_showing = height_for_palette_colors > space_available_for_palette_colors
+    if not palette_scroll_is_showing:
+        Singleton.palette_scroll_percentage = 0.0
+        Singleton.palette_scroll_is_grabbed = False
+    if palette_scroll_is_showing:
+        palette_pixels_available_for_scrolling = space_available_for_palette_colors - Singleton.palette_scroll_ltwh[3]
+        top_of_palette_scroll_area = Singleton.palette_ltwh[1] + Singleton.palette_padding
+        bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
+        Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
+        palette_scroll_color = Singleton.palette_scroll_inside_unhighlighted
+        if not Singleton.palette_scroll_is_grabbed:
+            mouse_is_over_palette_scroll = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.palette_scroll_ltwh)
+            if mouse_is_over_palette_scroll:
+                palette_scroll_color = Singleton.palette_scroll_inside_hightlighted
+                if Keys.editor_primary.newly_pressed:
+                    Singleton.palette_scroll_is_grabbed = True
+        else:
+            palette_scroll_color = Singleton.palette_scroll_inside_grabbed
+            if not Keys.editor_primary.pressed:
+                Singleton.palette_scroll_is_grabbed = False
+            else:
+                if Keys.cursor_y_pos.value <= top_of_palette_scroll_area:
+                    Singleton.palette_scroll_percentage = 0
+                    Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area
+                if top_of_palette_scroll_area < Keys.cursor_y_pos.value < bottom_of_palette_scroll_area + Singleton.palette_scroll_ltwh[3]:
+                    Singleton.palette_scroll_ltwh[1] = move_number_to_desired_range(top_of_palette_scroll_area, Singleton.palette_scroll_ltwh[1] + Keys.cursor_y_pos.delta, bottom_of_palette_scroll_area)
+                    Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / palette_pixels_available_for_scrolling, 1)
+                if Keys.cursor_y_pos.value >= bottom_of_palette_scroll_area + Singleton.palette_scroll_ltwh[3]:
+                    Singleton.palette_scroll_percentage = 1
+                    Singleton.palette_scroll_ltwh[1] = bottom_of_palette_scroll_area
+        Render.draw_rectangle(Screen, gl_context, Singleton.palette_scroll_ltwh, Singleton.palette_scroll_border_thickness, Singleton.palette_scroll_border_color, True, palette_scroll_color, True)
     #
     # draw colors
     for palette_color_index, palette_color in enumerate(Singleton.palette_colors):
