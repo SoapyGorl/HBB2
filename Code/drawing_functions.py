@@ -331,6 +331,18 @@ class RenderObjects():
         if coloring_inside:
             self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0] + border_thickness, ltwh[1] + border_thickness, ltwh[2] - (2 * border_thickness), ltwh[3] - (2 * border_thickness)), inner_color)
     #
+    def draw_part_of_rectangle(self, Screen: ScreenObject, gl_context, ltwh, border_thickness, border_color, coloring_up, coloring_left, coloring_down, coloring_right, inner_color, coloring_inside): # rectangle with border
+        if coloring_up:
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0], ltwh[1], ltwh[2], border_thickness), border_color)
+        if coloring_left:
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0], ltwh[1], border_thickness, ltwh[3]), border_color)
+        if coloring_down:
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0], ltwh[1]+ltwh[3]-border_thickness, ltwh[2], border_thickness), border_color)
+        if coloring_right:
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0]+ltwh[2]-border_thickness, ltwh[1], border_thickness, ltwh[3]), border_color)
+        if coloring_inside:
+            self.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (ltwh[0] + border_thickness, ltwh[1] + border_thickness, ltwh[2] - (2 * border_thickness), ltwh[3] - (2 * border_thickness)), inner_color)
+    #
     @staticmethod
     def clear_buffer(gl_context):
         gl_context.clear()

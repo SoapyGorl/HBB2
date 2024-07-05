@@ -21,21 +21,23 @@ def application_setup():
 
 
 class ApiObject():
-    _EDITOR = 'Editor'
-    _GAME = 'Game'
-    _MENU = 'Menu'
     def __init__(self, Render):
+        self.scroll_x = 0
+        self.scroll_y = 0
+        self.EDITOR = 'Editor'
+        self.GAME = 'Game'
+        self.MENU = 'Menu'
         self.setup_required = True
-        self.current_api = self._EDITOR
-        self.api_options = {self._EDITOR: editor_loop,
-                            self._GAME: False, 
-                            self._MENU: False,}
-        self.api_singletons = {self._EDITOR: EditorSingleton,
-                               self._GAME: False, 
-                               self._MENU: False,}
-        self.api_initiated_singletons = {self._EDITOR: 0,
-                                         self._GAME: 0, 
-                                         self._MENU: 0,}
+        self.current_api = self.EDITOR
+        self.api_options = {self.EDITOR: editor_loop,
+                            self.GAME: False, 
+                            self.MENU: False,}
+        self.api_singletons = {self.EDITOR: EditorSingleton,
+                               self.GAME: False, 
+                               self.MENU: False,}
+        self.api_initiated_singletons = {self.EDITOR: 0,
+                                         self.GAME: 0, 
+                                         self.MENU: 0,}
 
 
 class TimingClass():
@@ -123,6 +125,7 @@ class KeysClass():
         self.keys = -1
         self.left_click, self.middle_click, self.right_click = -1, -1, -1
         self.mouse_x_pos, self.mouse_y_pos = -1, -1
+        self.scroll_x, self.scroll_y = 0, 0
         #
         self.update_io_and_analog: Callable
         self.get_update_function()
@@ -132,6 +135,8 @@ class KeysClass():
             # mouse position
             'MOUSE_X_POS': lambda: self.mouse_x_pos,
             'MOUSE_Y_POS': lambda: self.mouse_y_pos,
+            'SCROLL_X': lambda: self.scroll_x,
+            'SCROLL_Y': lambda: self.scroll_y,
         }
         self.IO_MAPPING = {
             # keyboard
@@ -229,6 +234,8 @@ class KeysClass():
         self.editor_shift = IOKey(mapping=self.IO_MAPPING['SHIFT'])
         self.editor_control = IOKey(mapping=self.IO_MAPPING['CONTROL'])
         self.editor_tab = IOKey(mapping=self.IO_MAPPING['TAB'])
+        self.editor_scroll_x = AnalogKey(mapping=self.ANALOG_MAPPING['SCROLL_X'])
+        self.editor_scroll_y = AnalogKey(mapping=self.ANALOG_MAPPING['SCROLL_Y'])
         # main game
         self.primary = IOKey(mapping=self.IO_MAPPING['LEFT_CLICK'])
         self.secondary = IOKey(mapping=self.IO_MAPPING['RIGHT_CLICK'])
@@ -245,7 +252,7 @@ class KeysClass():
             # common
             self.cursor_x_pos, self.cursor_y_pos, 
             # editor
-            self.editor_primary, self.editor_up, self.editor_left, self.editor_down, self.editor_right, self.editor_shift, self.editor_control, self.editor_tab,
+            self.editor_primary, self.editor_up, self.editor_left, self.editor_down, self.editor_right, self.editor_shift, self.editor_control, self.editor_tab, self.editor_scroll_x, self.editor_scroll_y,
             # main game
             self.primary, self.secondary, self.release_grapple, self.float_up, self.left, self.sink_down, self.right, self.select, self.interact, self.pause,
         ]
@@ -256,8 +263,8 @@ class KeysClass():
     def paste_text(self):
         return pyperclip.paste()
     #
-    def update_controls(self):
-        self.update_io_and_analog()
+    def update_controls(self, Api):
+        self.update_io_and_analog(Api)
         self.apply_updates_to_controls()
 
     def get_update_function(self):
@@ -265,10 +272,11 @@ class KeysClass():
             self.update_io_and_analog = self.update_keyboard
             return
     #
-    def update_keyboard(self):
+    def update_keyboard(self, Api):
         self.keys = pygame.key.get_pressed()
         self.left_click, self.middle_click, self.right_click = pygame.mouse.get_pressed()
         self.mouse_x_pos, self.mouse_y_pos = pygame.mouse.get_pos()
+        self.scroll_x, self.scroll_y = Api.scroll_x, Api.scroll_y
     #
     def apply_updates_to_controls(self):
         for control in self.controls:

@@ -3,7 +3,8 @@ import sys
 from Code.utilities import move_number_to_desired_range
 
 
-def update_events(Screen):
+def update_events(Api, Screen):
+    Api.scroll_x, Api.scroll_y = 0, 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -17,16 +18,20 @@ def update_events(Screen):
             Screen.update_aspect()
             Screen.screen = pygame.display.set_mode((Screen.width, Screen.height), pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE)
             Screen.display = pygame.Surface((Screen.width, Screen.height))
+        #
+        if Api.current_api == Api.EDITOR:
+            if event.type == pygame.MOUSEWHEEL:
+                Api.scroll_x, Api.scroll_y = event.x, event.y
 
 
 def application_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     while True:
         #
         # update events
-        update_events(Screen)
+        update_events(Api, Screen)
         #
         # update keys
-        Keys.update_controls()
+        Keys.update_controls(Api)
         #
         # operate current API (e.g. Editor, Game, Menu)
         Api.api_options[Api.current_api](Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor)
