@@ -1,6 +1,6 @@
 import math
 import random
-from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, get_rect_minus_borders, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
+from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, get_rect_minus_borders, round_scaled, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
 from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_add_color
 from Code.Editor.editor_utilities import TextInput, CurrentlySelectedColor
 
@@ -109,6 +109,8 @@ class EditorSingleton():
         self.palette_scroll_inside_grabbed = rgba_to_glsl((150, 150, 150, 255))
         self.palette_scroll_border_thickness = 4
         self.palette_scroll_is_grabbed = False
+        self.palette_scroll_cursor_was_above = False
+        self.palette_scroll_cursor_was_below = False
         self.palette_scroll_ltwh = [self.palette_ltwh[2] - self.palette_padding - self.palette_scroll_width, 0, self.palette_scroll_width, self.palette_scroll_height]
         self.palette_scroll_percentage = 0.0
         #
@@ -244,31 +246,82 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
                     Singleton.palette_scroll_is_grabbed = True
             # scrolled mouse wheel while hovering over palette
             if not Singleton.palette_scroll_is_grabbed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, inside_palette_ltwh):
-                print(Keys.editor_scroll_y.value)
+                if Keys.editor_scroll_y.value != 0:
+                    Singleton.palette_scroll_is_grabbed = False
+                    Singleton.palette_scroll_cursor_was_above = False
+                    Singleton.palette_scroll_cursor_was_below = False
+                    palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
+                    palette_color_height = (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)
+                    original_palette_color_offset_y = round(move_number_to_desired_range(0, palette_colors_scroll_space_available * Singleton.palette_scroll_percentage, palette_colors_scroll_space_available))
+                    if Singleton.palette_scroll_ltwh[1] == top_of_palette_scroll_area:
+                        if Keys.editor_scroll_y.value > 0:
+                            palette_color_offset_y = 0
+                        if Keys.editor_scroll_y.value < 0:
+                            potential_new_palette_color_offset_y = round_scaled(original_palette_color_offset_y, palette_color_height)
+                            if potential_new_palette_color_offset_y > original_palette_color_offset_y:
+                                palette_color_offset_y = potential_new_palette_color_offset_y
+                            else:
+                                palette_color_offset_y = round_scaled(original_palette_color_offset_y + palette_color_height, palette_color_height)
+                    if top_of_palette_scroll_area < Singleton.palette_scroll_ltwh[1] < bottom_of_palette_scroll_area:
+                        if Keys.editor_scroll_y.value > 0:
+                            potential_new_palette_color_offset_y = round_scaled(original_palette_color_offset_y, palette_color_height)
+                            if potential_new_palette_color_offset_y < original_palette_color_offset_y:
+                                palette_color_offset_y = potential_new_palette_color_offset_y
+                            else:
+                                palette_color_offset_y = round_scaled(original_palette_color_offset_y - palette_color_height, palette_color_height)
+                        if Keys.editor_scroll_y.value < 0:
+                            potential_new_palette_color_offset_y = round_scaled(original_palette_color_offset_y, palette_color_height)
+                            if potential_new_palette_color_offset_y > original_palette_color_offset_y:
+                                palette_color_offset_y = potential_new_palette_color_offset_y
+                            else:
+                                palette_color_offset_y = round_scaled(original_palette_color_offset_y + palette_color_height, palette_color_height)
+                    if Singleton.palette_scroll_ltwh[1] == bottom_of_palette_scroll_area:
+                        if Keys.editor_scroll_y.value > 0:
+                            potential_new_palette_color_offset_y = round_scaled(original_palette_color_offset_y, palette_color_height)
+                            if potential_new_palette_color_offset_y < original_palette_color_offset_y:
+                                palette_color_offset_y = potential_new_palette_color_offset_y
+                            else:
+                                palette_color_offset_y = round_scaled(original_palette_color_offset_y - palette_color_height, palette_color_height)
+                        if Keys.editor_scroll_y.value < 0:
+                            palette_color_offset_y = palette_colors_scroll_space_available
+                    Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((palette_color_offset_y / palette_colors_scroll_space_available) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
+                    Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (palette_color_offset_y / palette_colors_scroll_space_available), 1)
         else:
             palette_scroll_color = Singleton.palette_scroll_inside_grabbed
             # released palette scroll
             if not Keys.editor_primary.pressed:
                 Singleton.palette_scroll_is_grabbed = False
+                Singleton.palette_scroll_cursor_was_above = False
+                Singleton.palette_scroll_cursor_was_below = False
             # still moving palette scroll
             else:
                 if Keys.cursor_y_pos.value <= top_of_palette_scroll_area:
+                    Singleton.palette_scroll_cursor_was_above = True
+                    Singleton.palette_scroll_cursor_was_below = False
                     Singleton.palette_scroll_percentage = 0
                     Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area
                 if top_of_palette_scroll_area < Keys.cursor_y_pos.value < bottom_of_palette_scroll_area + Singleton.palette_scroll_ltwh[3]:
-                    Singleton.palette_scroll_ltwh[1] = move_number_to_desired_range(top_of_palette_scroll_area, Singleton.palette_scroll_ltwh[1] + Keys.cursor_y_pos.delta, bottom_of_palette_scroll_area)
-                    Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / palette_pixels_available_for_scrolling, 1)
+                    if Singleton.palette_scroll_cursor_was_above:
+                        Singleton.palette_scroll_ltwh[1] = move_number_to_desired_range(top_of_palette_scroll_area, Keys.cursor_y_pos.value - 1, bottom_of_palette_scroll_area)
+                        Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / palette_pixels_available_for_scrolling, 1)
+                    if not Singleton.palette_scroll_cursor_was_above and not Singleton.palette_scroll_cursor_was_below:
+                        Singleton.palette_scroll_ltwh[1] = move_number_to_desired_range(top_of_palette_scroll_area, Singleton.palette_scroll_ltwh[1] + Keys.cursor_y_pos.delta, bottom_of_palette_scroll_area)
+                        Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / palette_pixels_available_for_scrolling, 1)
+                    if Singleton.palette_scroll_cursor_was_below:
+                        Singleton.palette_scroll_ltwh[1] = move_number_to_desired_range(top_of_palette_scroll_area, Keys.cursor_y_pos.value - Singleton.palette_scroll_ltwh[3] + 1, bottom_of_palette_scroll_area)
+                        Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / palette_pixels_available_for_scrolling, 1)
+                    Singleton.palette_scroll_cursor_was_above = False
+                    Singleton.palette_scroll_cursor_was_below = False
                 if Keys.cursor_y_pos.value >= bottom_of_palette_scroll_area + Singleton.palette_scroll_ltwh[3]:
+                    Singleton.palette_scroll_cursor_was_above = False
+                    Singleton.palette_scroll_cursor_was_below = True
                     Singleton.palette_scroll_percentage = 1
                     Singleton.palette_scroll_ltwh[1] = bottom_of_palette_scroll_area
         palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
         palette_color_offset_y = round(move_number_to_desired_range(0, palette_colors_scroll_space_available * Singleton.palette_scroll_percentage, palette_colors_scroll_space_available))
         Render.draw_rectangle(Screen, gl_context, Singleton.palette_scroll_ltwh, Singleton.palette_scroll_border_thickness, Singleton.palette_scroll_border_color, True, palette_scroll_color, True)
     #
-    # draw colors
-    # palette_color_offset_y
-    # Singleton.palette_color_wh[1]
-    # space_available_for_palette_colors
+    # draw palette colors and scroll
     lower_index_row = palette_color_offset_y // (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)
     higher_index_row = (palette_color_offset_y + space_available_for_palette_colors) // (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)
     lower_palette_color_index = lower_index_row * Singleton.palette_colors_per_row

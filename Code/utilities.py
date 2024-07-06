@@ -30,6 +30,10 @@ def str_can_be_hex(string):
         return False
 
 
+def round_scaled(value: float | int, scale: float | int):
+    return scale * round(value / scale)
+
+
 def switch_to_base10(string: str, base: int):
     return int(string, base)
 

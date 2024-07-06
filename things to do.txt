@@ -1,5 +1,2 @@
-1. Scroll bar for palette
-2. HSLA selector?
-3. RGBA/HSLA scroll?
-4. Select and remove multiple colors with only one 'remomve color' button press
-5. Hex color single digit error
+1. Click to instantly move palette scroll
+2. drag and drop palette color to other location in palette
