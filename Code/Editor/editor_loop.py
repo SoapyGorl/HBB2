@@ -239,11 +239,15 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         palette_scroll_color = Singleton.palette_scroll_inside_unhighlighted
         if not Singleton.palette_scroll_is_grabbed:
             # check for grabbing palette scroll
+            mouse_is_in_palette_scroll_area = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, palette_scroll_background_ltwh)
             mouse_is_over_palette_scroll = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.palette_scroll_ltwh)
-            if mouse_is_over_palette_scroll:
+            if mouse_is_in_palette_scroll_area:
                 palette_scroll_color = Singleton.palette_scroll_inside_hightlighted
                 if Keys.editor_primary.newly_pressed:
                     Singleton.palette_scroll_is_grabbed = True
+                    if not mouse_is_over_palette_scroll:
+                        Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, Keys.cursor_y_pos.value - (Singleton.palette_scroll_height // 2), bottom_of_palette_scroll_area))
+                        Singleton.palette_scroll_percentage = move_number_to_desired_range(0, (Singleton.palette_scroll_ltwh[1] - top_of_palette_scroll_area) / (bottom_of_palette_scroll_area - top_of_palette_scroll_area), 1)
             # scrolled mouse wheel while hovering over palette
             if not Singleton.palette_scroll_is_grabbed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, inside_palette_ltwh):
                 if Keys.editor_scroll_y.value != 0:
