@@ -104,6 +104,7 @@ class EditorSingleton():
         self.palette_pressed_add_or_remove_button_this_frame = False
         self.palette_moving_a_color_color = COLORS['RED']
         self.palette_moving_a_color = False
+        self.palette_just_clicked_new_color = False
         # palette scroll bar
         self.palette_scroll_background_color = COLORS['WHITE']
         self.palette_scroll_border_color = COLORS['BLUE']
@@ -334,6 +335,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
     lower_palette_color_index = lower_index_row * Singleton.palette_colors_per_row
     higher_palette_color_index = (higher_index_row+1) * Singleton.palette_colors_per_row
     selected_palette_color_is_showing = False
+    Singleton.palette_just_clicked_new_color = False
     for palette_color_index, palette_color in enumerate(Singleton.palette_colors[lower_palette_color_index:higher_palette_color_index]):
         current_palette_color_index = palette_color_index + lower_palette_color_index
         column = current_palette_color_index % Singleton.palette_colors_per_row
@@ -347,6 +349,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or ((Singleton.currently_selected_color.palette_index == palette_color_index) and Singleton.palette_pressed_add_or_remove_button_this_frame):
             mouse_is_on_edge_of_selected_palette_color = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.currently_selected_color.outline2_ltwh) and not point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, get_rect_minus_borders(Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline1_thickness * 2))
             if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, inside_palette_ltwh) and not mouse_is_on_edge_of_selected_palette_color:
+                Singleton.palette_just_clicked_new_color = True
                 Singleton.currently_selected_color.selected_through_palette = True
                 Singleton.currently_selected_color.color = palette_color
                 Singleton.currently_selected_color.palette_index = current_palette_color_index

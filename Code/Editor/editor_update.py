@@ -254,7 +254,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         if attempt_to_update_selected_color:
             changed_value_is_hex = True
     # update currently selected color
-    if attempt_to_update_selected_color:
+    if attempt_to_update_selected_color and not Singleton.palette_just_clicked_new_color:
         Singleton.currently_selected_color.selected_through_palette = False
         change_spectrum_to_new_color = False
         if changed_value_is_rgba:
