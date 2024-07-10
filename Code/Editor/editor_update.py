@@ -84,6 +84,20 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
             else:
                 Singleton.palette_colors.append(Singleton.currently_selected_color.color)
                 Singleton.currently_selected_color.palette_index = len(Singleton.palette_colors) - 1
+            # adjust palette and palette scroll
+            space_available_for_palette_colors = Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding)
+            palette_pixels_available_for_scrolling = space_available_for_palette_colors - Singleton.palette_scroll_ltwh[3]
+            top_of_palette_scroll_area = Singleton.palette_ltwh[1] + Singleton.palette_padding
+            bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
+            Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
+            number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
+            height_of_palette_colors = (number_of_palette_color_rows * (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)) + Singleton.palette_color_border_thickness
+            palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
+            palette_scroll_is_showing = height_of_palette_colors > space_available_for_palette_colors
+            if palette_scroll_is_showing:
+                palette_color_offset_y = round(move_number_to_desired_range(0, Singleton.palette_pixels_down, palette_colors_scroll_space_available))
+                Singleton.palette_scroll_percentage = move_number_to_desired_range(0, palette_color_offset_y / palette_colors_scroll_space_available, 1)
+                Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
     # remove color
     if Singleton.currently_selected_color.selected_through_palette:
         Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
@@ -102,6 +116,20 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
                         Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
                     break
                 Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+            # adjust palette and palette scroll
+            space_available_for_palette_colors = Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding)
+            palette_pixels_available_for_scrolling = space_available_for_palette_colors - Singleton.palette_scroll_ltwh[3]
+            top_of_palette_scroll_area = Singleton.palette_ltwh[1] + Singleton.palette_padding
+            bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
+            Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
+            number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
+            height_of_palette_colors = (number_of_palette_color_rows * (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)) + Singleton.palette_color_border_thickness
+            palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
+            palette_scroll_is_showing = height_of_palette_colors > space_available_for_palette_colors
+            if palette_scroll_is_showing:
+                palette_color_offset_y = round(move_number_to_desired_range(0, Singleton.palette_pixels_down, palette_colors_scroll_space_available))
+                Singleton.palette_scroll_percentage = move_number_to_desired_range(0, palette_color_offset_y / palette_colors_scroll_space_available, 1)
+                Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
     #
     # RGBA spectrum
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
