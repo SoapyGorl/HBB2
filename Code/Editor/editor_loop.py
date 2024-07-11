@@ -411,10 +411,24 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
     # manage moving a palette color
     if Singleton.palette_moving_a_color:
         Cursor.add_cursor_this_frame('cursor_nesw')
+        # get the palette index being hovered over by the cursor
+        palette_index_with_cursor_hovering = -1
+        switch_palette_color_ltwh = [0, 0, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1]]
+        for palette_color_index, palette_color in enumerate(Singleton.palette_colors[lower_palette_color_index:higher_palette_color_index]):
+            current_palette_color_index = palette_color_index + lower_palette_color_index
+            column = current_palette_color_index % Singleton.palette_colors_per_row
+            row = current_palette_color_index // Singleton.palette_colors_per_row
+            color_left = Singleton.palette_ltwh[0] + Singleton.palette_padding + (column * Singleton.palette_color_wh[0]) - (column * Singleton.palette_color_border_thickness)
+            color_top = Singleton.palette_ltwh[1] + Singleton.palette_padding + (row * Singleton.palette_color_wh[1]) - (row * Singleton.palette_color_border_thickness)
+            color_ltwh = (color_left, color_top-palette_color_offset_y, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1])
+            if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh):
+                switch_palette_color_ltwh[0] = color_ltwh[0]
+                switch_palette_color_ltwh[1] = color_ltwh[1]
+                palette_index_with_cursor_hovering = current_palette_color_index
+                break
+        # not dropping palette color
         if Keys.editor_primary.pressed:
             current_time = get_time()
-            # self.time_between_palette_moves_while_holding_color = 0.05
-            # self.time_since_moving_palette_while_holding_color = get_time()
             moving_this_frame = current_time - Singleton.time_since_moving_palette_while_holding_color >= Singleton.time_between_palette_moves_while_holding_color
             if moving_this_frame:
                 Singleton.time_since_moving_palette_while_holding_color = get_time()
@@ -429,19 +443,24 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
                     Singleton.palette_pixels_down = round(move_number_to_desired_range(0, Singleton.palette_pixels_down + Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness, palette_colors_scroll_space_available))
                     Singleton.palette_scroll_percentage = move_number_to_desired_range(0, Singleton.palette_pixels_down / palette_colors_scroll_space_available, 1)
                     Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
+            # emphasize palette color that the cursor is hovering over
+            if palette_index_with_cursor_hovering != -1:
+                outline1_ltwh = Singleton.currently_selected_color.outline1_ltwh
+                outline2_ltwh = Singleton.currently_selected_color.outline2_ltwh
+                outline1_ltwh[0] = switch_palette_color_ltwh[0] - Singleton.currently_selected_color.outline1_thickness
+                outline1_ltwh[1] = switch_palette_color_ltwh[1] - Singleton.currently_selected_color.outline1_thickness
+                outline2_ltwh[0] = switch_palette_color_ltwh[0] - Singleton.currently_selected_color.outline2_thickness
+                outline2_ltwh[1] = switch_palette_color_ltwh[1] - Singleton.currently_selected_color.outline2_thickness
+                Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', outline2_ltwh, Singleton.currently_selected_color.outline2_color)
+                Render.checkerboard(Screen, gl_context, 'black_pixel', outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
+                Render.draw_rectangle(Screen, gl_context, outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.palette_moving_a_color_color if Singleton.palette_moving_a_color else Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
+
         # drop the palette color
         if not Keys.editor_primary.pressed:
-            for palette_color_index, palette_color in enumerate(Singleton.palette_colors[lower_palette_color_index:higher_palette_color_index]):
-                current_palette_color_index = palette_color_index + lower_palette_color_index
-                column = current_palette_color_index % Singleton.palette_colors_per_row
-                row = current_palette_color_index // Singleton.palette_colors_per_row
-                color_left = Singleton.palette_ltwh[0] + Singleton.palette_padding + (column * Singleton.palette_color_wh[0]) - (column * Singleton.palette_color_border_thickness)
-                color_top = Singleton.palette_ltwh[1] + Singleton.palette_padding + (row * Singleton.palette_color_wh[1]) - (row * Singleton.palette_color_border_thickness)
-                color_ltwh = (color_left, color_top-palette_color_offset_y, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1])
-                if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh):
-                    del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                    Singleton.palette_colors.insert(current_palette_color_index, Singleton.currently_selected_color.color)
-                    Singleton.currently_selected_color.palette_index = current_palette_color_index
+            if palette_index_with_cursor_hovering != -1:
+                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                Singleton.palette_colors.insert(palette_index_with_cursor_hovering, Singleton.currently_selected_color.color)
+                Singleton.currently_selected_color.palette_index = palette_index_with_cursor_hovering
             Singleton.palette_moving_a_color = False
 
     if Singleton.palette_moving_a_color and Keys.editor_primary.pressed:
