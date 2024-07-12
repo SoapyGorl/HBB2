@@ -92,9 +92,12 @@ class EditorSingleton():
                                rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))),
                                rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))),
                                rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))), rgba_to_glsl((random.randint(0,255), random.randint(0,255), random.randint(0,255), random.randint(0,255))),]
+        self.palette_color_wh = [35, 35]
+        self.palette_colors_before_move = []
+        self.last_palette_index_during_move = -1
+        self.last_highlight_palette_ltwh_during_move = [0, 0, self.palette_color_wh[0], self.palette_color_wh[1]]
         self.palette_colors_per_row = 5
         self.palette_padding = 5
-        self.palette_color_wh = [35, 35]
         self.palette_space_between_colors_and_scroll = 8
         self.palette_scroll_width = 20
         self.palette_scroll_height = 50
@@ -389,7 +392,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
                 Singleton.add_color_dynamic_inputs[2].current_string = str(blue)
                 Singleton.add_color_dynamic_inputs[3].current_string = str(alpha)
                 Singleton.add_color_dynamic_inputs[4].current_string = f'{add_characters_to_front_of_string(base10_to_hex(red), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(green), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(blue), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(alpha), 2, "0")}'
-        if (Singleton.currently_selected_color.palette_index == current_palette_color_index):
+        if (Singleton.currently_selected_color.palette_index == current_palette_color_index) and not Singleton.palette_moving_a_color:
             selected_palette_color_is_showing = True
             Singleton.currently_selected_color.palette_ltwh[0] = color_ltwh[0]
             Singleton.currently_selected_color.palette_ltwh[1] = color_ltwh[1]
@@ -399,21 +402,21 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
     Render.draw_part_of_rectangle(Screen, gl_context, (0, Singleton.header_bottom, Singleton.palette_ltwh[2], Singleton.palette_ltwh[3]), Singleton.palette_padding, Singleton.palette_border_color, False, True, False, True, Singleton.palette_background_color, False)
     #
     # draw selected palette color outline
+    mouse_is_on_edge_of_selected_palette_color = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.currently_selected_color.outline2_ltwh) and not point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, get_rect_minus_borders(Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline1_thickness * 2))
     if Singleton.currently_selected_color.selected_through_palette and (len(Singleton.palette_colors) > 0) and selected_palette_color_is_showing:
         Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline2_color)
         Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.palette_moving_a_color_color if Singleton.palette_moving_a_color else Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
-        mouse_is_on_edge_of_selected_palette_color = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.currently_selected_color.outline2_ltwh) and not point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, get_rect_minus_borders(Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline1_thickness * 2))
         if mouse_is_on_edge_of_selected_palette_color:
             Cursor.add_cursor_this_frame('cursor_nesw')
             if Keys.editor_primary.pressed:
+                Singleton.palette_colors_before_move = deepcopy(Singleton.palette_colors)
+                Singleton.palette_index_before_move = Singleton.currently_selected_color.palette_index
                 Singleton.palette_moving_a_color = True
     # manage moving a palette color
     if Singleton.palette_moving_a_color:
         Cursor.add_cursor_this_frame('cursor_nesw')
         # get the palette index being hovered over by the cursor
-        palette_index_with_cursor_hovering = -1
-        switch_palette_color_ltwh = [0, 0, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1]]
         for palette_color_index, palette_color in enumerate(Singleton.palette_colors[lower_palette_color_index:higher_palette_color_index]):
             current_palette_color_index = palette_color_index + lower_palette_color_index
             column = current_palette_color_index % Singleton.palette_colors_per_row
@@ -421,16 +424,29 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
             color_left = Singleton.palette_ltwh[0] + Singleton.palette_padding + (column * Singleton.palette_color_wh[0]) - (column * Singleton.palette_color_border_thickness)
             color_top = Singleton.palette_ltwh[1] + Singleton.palette_padding + (row * Singleton.palette_color_wh[1]) - (row * Singleton.palette_color_border_thickness)
             color_ltwh = (color_left, color_top-palette_color_offset_y, Singleton.palette_color_wh[0], Singleton.palette_color_wh[1])
-            if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh):
-                switch_palette_color_ltwh[0] = color_ltwh[0]
-                switch_palette_color_ltwh[1] = color_ltwh[1]
-                palette_index_with_cursor_hovering = current_palette_color_index
+            if not mouse_is_on_edge_of_selected_palette_color:
+                if (Singleton.currently_selected_color.palette_index == current_palette_color_index):
+                    Singleton.last_palette_index_during_move = current_palette_color_index
+                    Singleton.last_highlight_palette_ltwh_during_move[0] = color_ltwh[0]
+                    Singleton.last_highlight_palette_ltwh_during_move[1] = color_ltwh[1]
+                if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh):
+                    Singleton.last_palette_index_during_move = current_palette_color_index
+                    Singleton.last_highlight_palette_ltwh_during_move[0] = color_ltwh[0]
+                    Singleton.last_highlight_palette_ltwh_during_move[1] = color_ltwh[1]
+                    del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                    Singleton.palette_colors.insert(Singleton.last_palette_index_during_move, Singleton.currently_selected_color.color)
+                    Singleton.currently_selected_color.palette_index = Singleton.last_palette_index_during_move
+                    break
+            if mouse_is_on_edge_of_selected_palette_color and (Singleton.currently_selected_color.palette_index == current_palette_color_index):
+                Singleton.last_palette_index_during_move = current_palette_color_index
+                Singleton.last_highlight_palette_ltwh_during_move[0] = color_ltwh[0]
+                Singleton.last_highlight_palette_ltwh_during_move[1] = color_ltwh[1]
                 break
         # not dropping palette color
         if Keys.editor_primary.pressed:
             current_time = get_time()
             moving_this_frame = current_time - Singleton.time_since_moving_palette_while_holding_color >= Singleton.time_between_palette_moves_while_holding_color
-            if moving_this_frame:
+            if moving_this_frame and palette_scroll_is_showing:
                 Singleton.time_since_moving_palette_while_holding_color = get_time()
                 # self.palette_moving_color_cursor_distance_from_top_or_bottom
                 cursor_is_high_in_palette = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, (Singleton.palette_ltwh[0], Singleton.palette_ltwh[1], Singleton.palette_ltwh[2], Singleton.palette_moving_color_cursor_distance_from_top_or_bottom))
@@ -444,28 +460,24 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
                     Singleton.palette_scroll_percentage = move_number_to_desired_range(0, Singleton.palette_pixels_down / palette_colors_scroll_space_available, 1)
                     Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
             # emphasize palette color that the cursor is hovering over
-            if palette_index_with_cursor_hovering != -1:
+            if Singleton.last_palette_index_during_move != -1:
                 outline1_ltwh = Singleton.currently_selected_color.outline1_ltwh
                 outline2_ltwh = Singleton.currently_selected_color.outline2_ltwh
-                outline1_ltwh[0] = switch_palette_color_ltwh[0] - Singleton.currently_selected_color.outline1_thickness
-                outline1_ltwh[1] = switch_palette_color_ltwh[1] - Singleton.currently_selected_color.outline1_thickness
-                outline2_ltwh[0] = switch_palette_color_ltwh[0] - Singleton.currently_selected_color.outline2_thickness
-                outline2_ltwh[1] = switch_palette_color_ltwh[1] - Singleton.currently_selected_color.outline2_thickness
+                outline1_ltwh[0] = Singleton.last_highlight_palette_ltwh_during_move[0] - Singleton.currently_selected_color.outline1_thickness
+                outline1_ltwh[1] = Singleton.last_highlight_palette_ltwh_during_move[1] - Singleton.currently_selected_color.outline1_thickness
+                outline2_ltwh[0] = Singleton.last_highlight_palette_ltwh_during_move[0] - Singleton.currently_selected_color.outline2_thickness
+                outline2_ltwh[1] = Singleton.last_highlight_palette_ltwh_during_move[1] - Singleton.currently_selected_color.outline2_thickness
                 Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', outline2_ltwh, Singleton.currently_selected_color.outline2_color)
                 Render.checkerboard(Screen, gl_context, 'black_pixel', outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
                 Render.draw_rectangle(Screen, gl_context, outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.palette_moving_a_color_color if Singleton.palette_moving_a_color else Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
-
         # drop the palette color
         if not Keys.editor_primary.pressed:
-            if palette_index_with_cursor_hovering != -1:
-                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                Singleton.palette_colors.insert(palette_index_with_cursor_hovering, Singleton.currently_selected_color.color)
-                Singleton.currently_selected_color.palette_index = palette_index_with_cursor_hovering
+            del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+            Singleton.palette_colors.insert(Singleton.last_palette_index_during_move, Singleton.currently_selected_color.color)
+            Singleton.currently_selected_color.palette_index = Singleton.last_palette_index_during_move
+            Singleton.palette_colors_before_move = []
+            Singleton.last_palette_index_during_move = -1
             Singleton.palette_moving_a_color = False
-
-    if Singleton.palette_moving_a_color and Keys.editor_primary.pressed:
-        pass
-
     if Singleton.palette_moving_a_color:
         Cursor.add_cursor_this_frame('cursor_nesw')
     #
