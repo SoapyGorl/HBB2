@@ -77,9 +77,9 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
             Singleton.palette_pressed_add_or_remove_button_this_frame = True
             Singleton.currently_selected_color.selected_through_palette = True
-            if Singleton.currently_selected_color.color in Singleton.palette_colors:
+            if percent_to_rgba(Singleton.currently_selected_color.color) in [percent_to_rgba(color) for color in Singleton.palette_colors]:
                 for index, color in enumerate(Singleton.palette_colors):
-                    if Singleton.currently_selected_color.color == color:
+                    if percent_to_rgba(Singleton.currently_selected_color.color) == percent_to_rgba(color):
                         Singleton.currently_selected_color.palette_index = index
             else:
                 Singleton.palette_colors.append(Singleton.currently_selected_color.color)
