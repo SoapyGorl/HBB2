@@ -239,6 +239,7 @@ IMAGE_PATHS = {
     'cursor_crosshair': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_crosshair.png'],
     'cursor_nesw': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_nesw.png'],
     'cursor_eyedrop': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_eyedrop.png'],
+    'cursor_i_beam': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\cursors\\cursor_i_beam.png'],
     # common
     'editor_circle': [[LOADED_IN_EDITOR], PATH + '\\Images\\not_always_loaded\\editor\\common\\circle.png'],
     # editor tools on right side of screen

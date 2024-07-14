@@ -266,7 +266,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
+        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y)
         if not attempt_to_update_selected_color:
             attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
             if attempt_to_update_selected_color:
@@ -276,7 +276,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     index, characters = 4, Singleton.add_color_inputs[4]
     Render.draw_string_of_characters(Screen, gl_context, characters, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
     Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, offset_y=text_offset_y)
+    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y)
     if not attempt_to_update_selected_color:
         attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
         if attempt_to_update_selected_color:

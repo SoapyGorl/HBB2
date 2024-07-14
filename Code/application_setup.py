@@ -62,10 +62,12 @@ class CursorClass():
     def __init__(self):
         self.cursors = {
             # [offset_x, offset_y, priority]
+            # higher priority > lower priority
             'cursor_arrow': [0, 0, 1],
             'cursor_crosshair': [-3, -3, 5],
             'cursor_nesw': [-13, -13, 99],
             'cursor_eyedrop': [0, -21, 6],
+            'cursor_i_beam': [-6, -9, 2]
             }
         self.current_cursor = ['', 0]
         self.reset_current_cursor()
