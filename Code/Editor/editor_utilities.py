@@ -911,3 +911,28 @@ class CurrentlySelectedColor():
         saturation = move_number_to_desired_range(0, saturation, 1)
         luminance = move_number_to_desired_range(0, luminance, 1)
         return [hue, saturation, luminance]
+
+
+
+class HeaderManager():
+    def __init__(self,
+                 option_names_and_responses: dict,
+                 text_pixel_size: int,
+                 text_color: tuple[int, int, int, int],
+                 background_color: tuple[int, int, int, int],
+                 highlighted_background_color: tuple[int, int, int, int]):
+
+        self.option_names_and_responses: dict = option_names_and_responses
+        self.text_pixel_size: int = text_pixel_size
+        self.text_color: tuple[int, int, int, int] = text_color
+        self.background_color: tuple[int, int, int, int] = background_color
+        self.highlighted_background_color: tuple[int, int, int, int] = highlighted_background_color
+    #
+    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+        print('s')
+    #
+    def _draw_options(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+        pass
+    #
+    def _get_response_function_by_name(self, name):
+        return self.option_names_and_responses[name]

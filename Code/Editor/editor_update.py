@@ -16,7 +16,7 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
     #
     # header options
     already_highlighted_an_option = False
-    for index, string, left, hover_ltwh in zip(Singleton.header_indexes, Singleton.header_strings, Singleton.header_strings_lefts, Singleton.header_hover_ltwh):
+    for index, string, left, hover_ltwh in zip(Singleton.header_indexes, Singleton.header_options.keys(), Singleton.header_strings_lefts, Singleton.header_hover_ltwh):
         if not already_highlighted_an_option:
             if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, hover_ltwh):
                 already_highlighted_an_option = True
@@ -24,7 +24,7 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
                     Singleton.header_selected = True
                     Singleton.header_which_selected = [False for _ in Singleton.header_which_selected]
                     Singleton.header_which_selected[index] = True
-                    Singleton.header_string_selected = Singleton.header_strings[index]
+                    Singleton.header_string_selected = string
                     Singleton.header_index_selected = index
                 if not Singleton.header_which_selected[index]:
                     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', hover_ltwh, Singleton.header_highlight_color)
@@ -34,17 +34,8 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
     #
     # selected header options
     if Singleton.header_selected:
-        match Singleton.header_string_selected:
-            case 'File':
-                pass
-            case 'Edit':
-                pass
-            case 'Options':
-                pass
-            case 'Objects':
-                pass
-            case 'Blocks':
-                pass
+        selected_header_manager = Singleton.header_options[Singleton.header_string_selected]
+        selected_header_manager.update(Screen, gl_context, Keys, Render, Cursor)
     #
     # header border
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (0, Singleton.header_height, Screen.width, Singleton.header_border_thickness), Singleton.header_border_color)

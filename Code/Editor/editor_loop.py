@@ -3,7 +3,7 @@ import random
 from copy import deepcopy
 from Code.utilities import rgba_to_glsl, percent_to_rgba, COLORS, get_text_height, get_text_width, point_is_in_ltwh, IMAGE_PATHS, loading_and_unloading_images_manager, get_rect_minus_borders, round_scaled, LOADED_IN_EDITOR, OFF_SCREEN, move_number_to_desired_range, get_time, switch_to_base10, base10_to_hex, add_characters_to_front_of_string
 from Code.Editor.editor_update import update_header, update_footer, update_separate_palette_and_add_color, update_tools, update_add_color
-from Code.Editor.editor_utilities import TextInput, CurrentlySelectedColor
+from Code.Editor.editor_utilities import TextInput, CurrentlySelectedColor, HeaderManager
 
 
 class EditorSingleton():
@@ -38,11 +38,31 @@ class EditorSingleton():
             self.header_hover_ltwh.append([current_left_position - self.distance_between_header_options, 0, hover_width, self.header_height])
             current_left_position += hover_width
         #
-        self.header_strings_options = {'File': ['New', 'Open', 'Save' 'Main menu', 'Exit game'],
-                                       'Edit': ['Undo', 'Paste', 'Rotate', 'Replace color', 'Flip'],
-                                       'Options': ['Play level', 'Toggle map', 'Connect map', 'Grid'],
-                                       'Objects': ['Object'],
-                                       'Blocks': ['Block']}
+        self.header_options = {
+            'File': HeaderManager(option_names_and_responses={'New level': lambda x: x,
+                                                              'Save level': lambda x: x,
+                                                              'Main menu': lambda x: x,
+                                                              'Exit game': lambda x: x},
+                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+
+            'Edit': HeaderManager(option_names_and_responses={'Undo': lambda x: x,
+                                                              'Paste': lambda x: x,
+                                                              'Rotate': lambda x: x,
+                                                              'Replace color': lambda x: x,
+                                                              'Flip': lambda x: x},
+                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+
+            'Options': HeaderManager(option_names_and_responses={'Play level': lambda x: x,
+                                                                 'Toggle map': lambda x: x,
+                                                                 'Show grid': lambda x: x,},
+                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+
+            'Objects': HeaderManager(option_names_and_responses={'Object': lambda x: x,},
+                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+
+            'Blocks': HeaderManager(option_names_and_responses={'Block': lambda x: x,},
+                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+            }
         self.header_bottom = self.header_height + self.header_border_thickness
         #
         # palette
