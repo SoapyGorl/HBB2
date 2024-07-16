@@ -38,30 +38,32 @@ class EditorSingleton():
             self.header_hover_ltwh.append([current_left_position - self.distance_between_header_options, 0, hover_width, self.header_height])
             current_left_position += hover_width
         #
+        self.header_manager_padding = 5
+        self.header_manager_border_thickness = 3
         self.header_options = {
             'File': HeaderManager(option_names_and_responses={'New level': lambda x: x,
                                                               'Save level': lambda x: x,
                                                               'Main menu': lambda x: x,
                                                               'Exit game': lambda x: x},
-                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+                                  text_pixel_size = 3, padding = self.header_manager_padding, border_thickness = self.header_manager_border_thickness, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW'], edge_color = COLORS['BLUE']),
 
             'Edit': HeaderManager(option_names_and_responses={'Undo': lambda x: x,
                                                               'Paste': lambda x: x,
                                                               'Rotate': lambda x: x,
                                                               'Replace color': lambda x: x,
                                                               'Flip': lambda x: x},
-                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+                                  text_pixel_size = 3, padding = self.header_manager_padding, border_thickness = self.header_manager_border_thickness, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW'], edge_color = COLORS['BLUE']),
 
             'Options': HeaderManager(option_names_and_responses={'Play level': lambda x: x,
                                                                  'Toggle map': lambda x: x,
                                                                  'Show grid': lambda x: x,},
-                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+                                  text_pixel_size = 3, padding = self.header_manager_padding, border_thickness = self.header_manager_border_thickness, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW'], edge_color = COLORS['BLUE']),
 
             'Objects': HeaderManager(option_names_and_responses={'Object': lambda x: x,},
-                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+                                  text_pixel_size = 3, padding = self.header_manager_padding, border_thickness = self.header_manager_border_thickness, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW'], edge_color = COLORS['BLUE']),
 
             'Blocks': HeaderManager(option_names_and_responses={'Block': lambda x: x,},
-                                  text_pixel_size = 3, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW']),
+                                  text_pixel_size = 3, padding = self.header_manager_padding, border_thickness = self.header_manager_border_thickness, text_color = COLORS['BLACK'], background_color = COLORS['WHITE'], highlighted_background_color = COLORS['YELLOW'], edge_color = COLORS['BLUE']),
             }
         self.header_bottom = self.header_height + self.header_border_thickness
         #

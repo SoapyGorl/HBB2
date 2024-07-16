@@ -918,20 +918,33 @@ class HeaderManager():
     def __init__(self,
                  option_names_and_responses: dict,
                  text_pixel_size: int,
+                 padding: int,
+                 border_thickness: int,
                  text_color: tuple[int, int, int, int],
                  background_color: tuple[int, int, int, int],
-                 highlighted_background_color: tuple[int, int, int, int]):
+                 highlighted_background_color: tuple[int, int, int, int],
+                 edge_color: tuple[int, int, int, int]):
 
         self.option_names_and_responses: dict = option_names_and_responses
         self.text_pixel_size: int = text_pixel_size
+        self.padding: int = padding
+        self.border_thickness: int = border_thickness
         self.text_color: tuple[int, int, int, int] = text_color
         self.background_color: tuple[int, int, int, int] = background_color
         self.highlighted_background_color: tuple[int, int, int, int] = highlighted_background_color
+        self.edge_color: tuple[int, int, int, int] = edge_color
+        self.text_height: int = get_text_height(self.text_pixel_size) - (2 * self.text_pixel_size)
+        self.box_ltwh: list[int, int, int, int] = [
+            0,
+            0,
+            max([get_text_width(key) for key in self.option_names_and_responses.keys()]) + (2 * self.padding) + (2 * self.border_thickness),
+            (len(self.option_names_and_responses) * self.text_height) + ((len(self.option_names_and_responses) + 1) * self.padding) + (2 * self.border_thickness)
+        ]
     #
-    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, left: int = 0, top: int = 0):
         print('s')
     #
-    def _draw_options(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+    def _draw_options(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, left: int = 0, top: int = 0):
         pass
     #
     def _get_response_function_by_name(self, name):
