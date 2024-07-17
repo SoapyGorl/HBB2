@@ -916,18 +916,23 @@ class CurrentlySelectedColor():
 
 class HeaderManager():
     def __init__(self,
+                 render_instance,
                  option_names_and_responses: dict,
                  text_pixel_size: int,
                  padding: int,
+                 padding_between_items: int,
                  border_thickness: int,
                  text_color: tuple[int, int, int, int],
                  background_color: tuple[int, int, int, int],
                  highlighted_background_color: tuple[int, int, int, int],
-                 edge_color: tuple[int, int, int, int]):
+                 edge_color: tuple[int, int, int, int],
+                 left: int,
+                 top: int):
 
         self.option_names_and_responses: dict = option_names_and_responses
         self.text_pixel_size: int = text_pixel_size
         self.padding: int = padding
+        self.padding_between_items: int = padding_between_items
         self.border_thickness: int = border_thickness
         self.text_color: tuple[int, int, int, int] = text_color
         self.background_color: tuple[int, int, int, int] = background_color
@@ -935,17 +940,34 @@ class HeaderManager():
         self.edge_color: tuple[int, int, int, int] = edge_color
         self.text_height: int = get_text_height(self.text_pixel_size) - (2 * self.text_pixel_size)
         self.box_ltwh: list[int, int, int, int] = [
-            0,
-            0,
-            max([get_text_width(key) for key in self.option_names_and_responses.keys()]) + (2 * self.padding) + (2 * self.border_thickness),
-            (len(self.option_names_and_responses) * self.text_height) + ((len(self.option_names_and_responses) + 1) * self.padding) + (2 * self.border_thickness)
+            left,
+            top,
+            max([get_text_width(render_instance, key, self.text_pixel_size) for key in self.option_names_and_responses.keys()]) + (2 * self.padding) + (2 * self.border_thickness),
+            (len(self.option_names_and_responses) * self.text_height) + ((len(self.option_names_and_responses) - 1) * self.padding_between_items) + (2 * self.border_thickness) + (2 * self.padding)
         ]
+        self.options_text_lt = []
+        self.options_highlight_ltwh = []
+        for index in range(len(self.option_names_and_responses.keys())):
+            self.options_text_lt.append([left + self.border_thickness + self.padding, top + self.border_thickness + self.padding + (index * (self.text_height + self.padding_between_items))])
+            if index == 0:
+                self.options_highlight_ltwh.append([left + self.border_thickness, top + self.border_thickness, self.box_ltwh[2] - (2 * self.border_thickness), (self.padding) + self.text_height + (self.padding_between_items / 2)])
+                continue
+            if index == len(self.option_names_and_responses.keys()) - 1:
+                self.options_highlight_ltwh.append([left + self.border_thickness, top + self.box_ltwh[3] - self.border_thickness - self.padding - self.text_height - (self.padding_between_items / 2), self.box_ltwh[2] - (2 * self.border_thickness), (self.padding_between_items / 2) + self.text_height + (self.padding)])
+                continue
+            self.options_highlight_ltwh.append([left + self.border_thickness, top + self.border_thickness + self.padding + self.text_height + (self.padding_between_items / 2) + ((index - 1) * (self.padding_between_items + self.text_height)), self.box_ltwh[2] - (2 * self.border_thickness), (self.padding_between_items) + self.text_height])
     #
-    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, left: int = 0, top: int = 0):
-        print('s')
-    #
-    def _draw_options(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, left: int = 0, top: int = 0):
-        pass
+    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors):
+        deselect_headers = not point_is_in_ltwh(keys_class_instance.cursor_x_pos.value, keys_class_instance.cursor_y_pos.value, self.box_ltwh)
+        render_instance.draw_rectangle(screen_instance, gl_context, self.box_ltwh, self.border_thickness, self.edge_color, True, self.background_color, True)
+        hovered_over_item = False
+        for string, option_text_lt, option_highlight_ltwh in zip(self.option_names_and_responses.keys(), self.options_text_lt, self.options_highlight_ltwh):
+            hovering_over_item = point_is_in_ltwh(keys_class_instance.cursor_x_pos.value, keys_class_instance.cursor_y_pos.value, option_highlight_ltwh)
+            if hovering_over_item and not hovered_over_item:
+                hovered_over_item = True
+                render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'blank_pixel', option_highlight_ltwh, self.highlighted_background_color)
+            render_instance.draw_string_of_characters(screen_instance, gl_context, string, option_text_lt, self.text_pixel_size, self.text_color)
+        return deselect_headers
     #
     def _get_response_function_by_name(self, name):
         return self.option_names_and_responses[name]

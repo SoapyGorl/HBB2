@@ -8,11 +8,6 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
     header_ltwh = (0, 0, Screen.width, Singleton.header_height)
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', header_ltwh, Singleton.header_background_color)
     mouse_in_header = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, header_ltwh)
-    if not mouse_in_header:
-        Singleton.header_selected = False
-        Singleton.header_which_selected = [False for _ in Singleton.header_which_selected]
-        Singleton.header_string_selected = ''
-        Singleton.header_index_selected = -1
     #
     # header options
     already_highlighted_an_option = False
@@ -32,13 +27,21 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
                     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', hover_ltwh, Singleton.header_selected_color)
         Render.draw_string_of_characters(Screen, gl_context, string, (left, Singleton.header_strings_top), Singleton.header_text_pixel_size, Singleton.header_text_pixel_color)
     #
-    # selected header options
-    if Singleton.header_selected:
-        selected_header_manager = Singleton.header_options[Singleton.header_string_selected]
-        selected_header_manager.update(Screen, gl_context, Keys, Render, Cursor)
-    #
     # header border
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', (0, Singleton.header_height, Screen.width, Singleton.header_border_thickness), Singleton.header_border_color)
+    #
+    # selected header options
+    deselect_headers = False
+    if Singleton.header_selected:
+        selected_header_manager = Singleton.header_options[Singleton.header_string_selected]
+        deselect_headers = selected_header_manager.update(Screen, gl_context, Keys, Render, Cursor)
+    #
+    # deselect header options
+    if not mouse_in_header and deselect_headers:
+        Singleton.header_selected = False
+        Singleton.header_which_selected = [False for _ in Singleton.header_which_selected]
+        Singleton.header_string_selected = ''
+        Singleton.header_index_selected = -1
 
 
 def update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
