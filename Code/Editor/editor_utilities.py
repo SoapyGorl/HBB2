@@ -966,6 +966,8 @@ class HeaderManager():
             if hovering_over_item and not hovered_over_item:
                 hovered_over_item = True
                 render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'blank_pixel', option_highlight_ltwh, self.highlighted_background_color)
+                if keys_class_instance.editor_primary.newly_pressed:
+                    pass
             render_instance.draw_string_of_characters(screen_instance, gl_context, string, option_text_lt, self.text_pixel_size, self.text_color)
         return deselect_headers
     #
