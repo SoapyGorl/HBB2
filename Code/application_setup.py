@@ -70,10 +70,12 @@ class CursorClass():
             'cursor_i_beam': [-6, -9, 2]
             }
         self.current_cursor = ['', 0]
+        self.last_cursor = ['', 0]
         self.reset_current_cursor()
     #
     def update_cursor(self, Screen, gl_context, Render, Keys):
         Render.basic_rect_ltwh_to_quad(Screen, gl_context, self.current_cursor[0], [Keys.cursor_x_pos.value + self.cursors[self.current_cursor[0]][0], Keys.cursor_y_pos.value + self.cursors[self.current_cursor[0]][1], Render.renderable_objects[self.current_cursor[0]].ORIGINAL_WIDTH, Render.renderable_objects[self.current_cursor[0]].ORIGINAL_HEIGHT])
+        self.last_cursor = self.current_cursor
         self.reset_current_cursor()
     #
     def add_cursor_this_frame(self, added_cursor: str):

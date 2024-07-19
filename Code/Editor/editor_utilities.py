@@ -967,9 +967,9 @@ class HeaderManager():
                 hovered_over_item = True
                 render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'blank_pixel', option_highlight_ltwh, self.highlighted_background_color)
                 if keys_class_instance.editor_primary.newly_pressed:
-                    pass
+                    self._execute_response_function_by_name(string)
             render_instance.draw_string_of_characters(screen_instance, gl_context, string, option_text_lt, self.text_pixel_size, self.text_color)
         return deselect_headers
     #
-    def _get_response_function_by_name(self, name):
-        return self.option_names_and_responses[name]
+    def _execute_response_function_by_name(self, name):
+        self.option_names_and_responses[name]()

@@ -34,6 +34,8 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
     deselect_headers = False
     if Singleton.header_selected:
         selected_header_manager = Singleton.header_options[Singleton.header_string_selected]
+        Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.header_hover_ltwh[Singleton.header_index_selected], Singleton.header_selected_color)
+        Render.draw_string_of_characters(Screen, gl_context, list(Singleton.header_options.keys())[Singleton.header_index_selected], (Singleton.header_strings_lefts[Singleton.header_index_selected], Singleton.header_strings_top), Singleton.header_text_pixel_size, Singleton.header_text_pixel_color)
         deselect_headers = selected_header_manager.update(Screen, gl_context, Keys, Render, Cursor)
     #
     # deselect header options
@@ -68,7 +70,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     if not Singleton.currently_selected_color.selected_through_palette:
         Singleton.add_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
         Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
+        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
             Singleton.palette_pressed_add_or_remove_button_this_frame = True
             Singleton.currently_selected_color.selected_through_palette = True
             if percent_to_rgba(Singleton.currently_selected_color.color) in [percent_to_rgba(color) for color in Singleton.palette_colors]:
@@ -93,37 +95,38 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
                 Singleton.palette_scroll_percentage = move_number_to_desired_range(0, palette_color_offset_y / palette_colors_scroll_space_available, 1)
                 Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
     # remove color
-    if Singleton.currently_selected_color.selected_through_palette:
-        Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
-        Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and not Singleton.palette_pressed_add_or_remove_button_this_frame:
-            for _ in range(1):
-                Singleton.palette_pressed_add_or_remove_button_this_frame = True
-                del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                if len(Singleton.palette_colors) == 0:
-                    Singleton.currently_selected_color.palette_index = -1
-                    Singleton.currently_selected_color.selected_through_palette = False
-                    break
-                if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors):
-                    Singleton.currently_selected_color.palette_index -= 1
-                    if len(Singleton.palette_colors) > 0:
-                        Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-                    break
-                Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
-            # adjust palette and palette scroll
-            space_available_for_palette_colors = Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding)
-            palette_pixels_available_for_scrolling = space_available_for_palette_colors - Singleton.palette_scroll_ltwh[3]
-            top_of_palette_scroll_area = Singleton.palette_ltwh[1] + Singleton.palette_padding
-            bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
-            Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
-            number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
-            height_of_palette_colors = (number_of_palette_color_rows * (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)) + Singleton.palette_color_border_thickness
-            palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
-            palette_scroll_is_showing = height_of_palette_colors > space_available_for_palette_colors
-            if palette_scroll_is_showing:
-                palette_color_offset_y = round(move_number_to_desired_range(0, Singleton.palette_pixels_down, palette_colors_scroll_space_available))
-                Singleton.palette_scroll_percentage = move_number_to_desired_range(0, palette_color_offset_y / palette_colors_scroll_space_available, 1)
-                Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
+    if not Singleton.palette_pressed_add_or_remove_button_this_frame:
+        if Singleton.currently_selected_color.selected_through_palette:
+            Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
+            Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
+            if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
+                for _ in range(1):
+                    Singleton.palette_pressed_add_or_remove_button_this_frame = True
+                    del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                    if len(Singleton.palette_colors) == 0:
+                        Singleton.currently_selected_color.palette_index = -1
+                        Singleton.currently_selected_color.selected_through_palette = False
+                        break
+                    if Singleton.currently_selected_color.palette_index == len(Singleton.palette_colors):
+                        Singleton.currently_selected_color.palette_index -= 1
+                        if len(Singleton.palette_colors) > 0:
+                            Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                        break
+                    Singleton.currently_selected_color.color = Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
+                # adjust palette and palette scroll
+                space_available_for_palette_colors = Singleton.palette_ltwh[3] - (2 * Singleton.palette_padding)
+                palette_pixels_available_for_scrolling = space_available_for_palette_colors - Singleton.palette_scroll_ltwh[3]
+                top_of_palette_scroll_area = Singleton.palette_ltwh[1] + Singleton.palette_padding
+                bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
+                Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
+                number_of_palette_color_rows = ((len(Singleton.palette_colors) - 1) // Singleton.palette_colors_per_row) + 1
+                height_of_palette_colors = (number_of_palette_color_rows * (Singleton.palette_color_wh[1] - Singleton.palette_color_border_thickness)) + Singleton.palette_color_border_thickness
+                palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
+                palette_scroll_is_showing = height_of_palette_colors > space_available_for_palette_colors
+                if palette_scroll_is_showing:
+                    palette_color_offset_y = round(move_number_to_desired_range(0, Singleton.palette_pixels_down, palette_colors_scroll_space_available))
+                    Singleton.palette_scroll_percentage = move_number_to_desired_range(0, palette_color_offset_y / palette_colors_scroll_space_available, 1)
+                    Singleton.palette_scroll_ltwh[1] = round(move_number_to_desired_range(top_of_palette_scroll_area, top_of_palette_scroll_area + ((Singleton.palette_scroll_percentage) * (bottom_of_palette_scroll_area - top_of_palette_scroll_area)), bottom_of_palette_scroll_area))
     #
     # RGBA spectrum
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
@@ -209,6 +212,8 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Singleton.add_color_dynamic_inputs[4].current_string = f'{add_characters_to_front_of_string(base10_to_hex(red), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(green), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(blue), 2, "0")}{add_characters_to_front_of_string(base10_to_hex(alpha), 2, "0")}'
         if Keys.editor_primary.released:
             Singleton.add_color_alpha_circle_is_held = False
+    if Singleton.add_color_circle_is_held or Singleton.add_color_saturation_circle_is_held or Singleton.add_color_alpha_circle_is_held:
+        Cursor.add_cursor_this_frame('cursor_eyedrop')
     Singleton.add_color_alpha_circle_ltwh[0] = Singleton.add_color_alpha_ltwh[0] + Singleton.add_color_alpha_circle_relative_x - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
     Singleton.add_color_alpha_circle_ltwh[1] = Singleton.add_color_alpha_ltwh[1] + (Singleton.add_color_alpha_ltwh[3] // 2) - (Render.renderable_objects['editor_circle'].ORIGINAL_WIDTH // 2)
     Render.basic_rect_ltwh_image_with_color(Screen, gl_context, 'editor_circle', Singleton.add_color_alpha_circle_ltwh, Singleton.add_color_current_circle_color)
@@ -278,6 +283,8 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     # update currently selected color
     if attempt_to_update_selected_color and not Singleton.palette_just_clicked_new_color:
         Singleton.currently_selected_color.selected_through_palette = False
+        if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh) and Keys.editor_primary.newly_pressed:
+            Singleton.currently_selected_color.selected_through_palette = True
         change_spectrum_to_new_color = False
         if changed_value_is_rgba:
             all_are_valid = True
