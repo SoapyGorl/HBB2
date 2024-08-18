@@ -108,13 +108,13 @@ class TextInput():
                 self.current_string = self.default_value
                 return
     #
-    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+    def update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0, enabled: bool = True):
         self.should_update_spectrum = False
         self.double_clicked_last_frame = self.double_clicked
-        background_ltwh = self._update(screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x, offset_y)
+        background_ltwh = self._update(screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x, offset_y, enabled)
         if not self.currently_selected:
             render_instance.draw_string_of_characters(screen_instance, gl_context, self.current_string, [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)], self.text_pixel_size, self.text_color)
-        else:
+        if self.currently_selected:
             start_left, top = [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)]
             small_highlight_index = min(self.highlighted_index_range)
             big_highlight_index  = max(self.highlighted_index_range)
@@ -132,10 +132,13 @@ class TextInput():
                 render_instance.draw_string_of_characters(screen_instance, gl_context, self.current_string, [math.floor(background_ltwh[0] + self.text_padding), math.floor(background_ltwh[1] + self.text_padding)], self.text_pixel_size, self.text_color)
             self.draw_blinking_line(screen_instance, gl_context, render_instance, background_ltwh)
     #
-    def _update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0):
+    def _update(self, screen_instance, gl_context, keys_class_instance, render_instance, cursors, offset_x: int = 0, offset_y: int = 0, enabled: bool = False):
         background_ltwh = [self.background_ltwh[0] + offset_x, self.background_ltwh[1] + offset_y, self.background_ltwh[2], self.background_ltwh[3]]
         render_instance.basic_rect_ltwh_with_color_to_quad(screen_instance, gl_context, 'black_pixel', background_ltwh, self.background_color)
         cursor_inside_box = point_is_in_ltwh(keys_class_instance.cursor_x_pos.value, keys_class_instance.cursor_y_pos.value, background_ltwh)
+        if not enabled:
+            self.deselect_box()
+            return background_ltwh
         if cursor_inside_box:
             cursors.add_cursor_this_frame('cursor_i_beam')
         double_clicked = self.update_double_click(keys_class_instance, background_ltwh)

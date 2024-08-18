@@ -5,6 +5,13 @@ from Code.utilities import point_is_in_ltwh, move_number_to_desired_range, perce
 
 def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
+    # editor is disabled
+    if not Singleton.editor_enabled:
+        Singleton.palette_scroll_is_grabbed = False
+        Singleton.palette_scroll_cursor_was_above = False
+        Singleton.palette_scroll_cursor_was_below = False
+        Singleton.palette_moving_a_color = False
+    #
     # draw palette background
     Singleton.palette_ltwh[3] = Screen.height - Singleton.header_bottom - Singleton.add_color_ltwh[3] - Singleton.footer_ltwh[3] - Singleton.separate_palette_and_add_color_ltwh[3]
     inside_palette_ltwh = get_rect_minus_borders(Singleton.palette_ltwh, Singleton.palette_padding)
@@ -27,7 +34,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         bottom_of_palette_scroll_area = top_of_palette_scroll_area + palette_pixels_available_for_scrolling
         Singleton.palette_scroll_ltwh[1] = top_of_palette_scroll_area + (palette_pixels_available_for_scrolling * Singleton.palette_scroll_percentage)
         palette_scroll_color = Singleton.palette_scroll_inside_unhighlighted
-        if not Singleton.palette_scroll_is_grabbed:
+        if Singleton.editor_enabled and not Singleton.palette_scroll_is_grabbed:
             # check for grabbing palette scroll
             mouse_is_in_palette_scroll_area = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, palette_scroll_background_ltwh)
             mouse_is_over_palette_scroll = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.palette_scroll_ltwh)
@@ -83,7 +90,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         else:
             palette_scroll_color = Singleton.palette_scroll_inside_grabbed
             # released palette scroll
-            if not Keys.editor_primary.pressed:
+            if not Singleton.editor_enabled or not Keys.editor_primary.pressed:
                 Singleton.palette_scroll_is_grabbed = False
                 Singleton.palette_scroll_cursor_was_above = False
                 Singleton.palette_scroll_cursor_was_below = False
@@ -113,6 +120,8 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
                     Singleton.palette_scroll_ltwh[1] = bottom_of_palette_scroll_area
         palette_colors_scroll_space_available = height_of_palette_colors - space_available_for_palette_colors
         palette_color_offset_y = round(move_number_to_desired_range(0, palette_colors_scroll_space_available * Singleton.palette_scroll_percentage, palette_colors_scroll_space_available))
+        if not Singleton.editor_enabled:
+            palette_scroll_color = Singleton.palette_scroll_inside_unhighlighted
         Render.draw_rectangle(Screen, gl_context, Singleton.palette_scroll_ltwh, Singleton.palette_scroll_border_thickness, Singleton.palette_scroll_border_color, True, palette_scroll_color, True)
     #
     # draw palette colors and scroll
@@ -133,7 +142,7 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         if palette_color[3] < 1:
             Render.checkerboard(Screen, gl_context, 'black_pixel', color_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, color_ltwh, Singleton.palette_color_border_thickness, Singleton.palette_colors_border_color, True, palette_color, True)
-        if (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or ((Singleton.currently_selected_color.palette_index == palette_color_index) and Singleton.palette_pressed_add_or_remove_button_this_frame):
+        if Singleton.editor_enabled and (Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_ltwh)) or ((Singleton.currently_selected_color.palette_index == palette_color_index) and Singleton.palette_pressed_add_or_remove_button_this_frame):
             mouse_is_on_edge_of_selected_palette_color = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.currently_selected_color.outline2_ltwh) and not point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, get_rect_minus_borders(Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline1_thickness * 2))
             if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, inside_palette_ltwh) and not mouse_is_on_edge_of_selected_palette_color:
                 Singleton.palette_just_clicked_new_color = True
@@ -186,9 +195,9 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
         Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.currently_selected_color.outline2_ltwh, Singleton.currently_selected_color.outline2_color)
         Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.checker_color1, Singleton.currently_selected_color.checker_color2, Singleton.currently_selected_color.checker_pattern_repeat, Singleton.currently_selected_color.checker_pattern_repeat)
         Render.draw_rectangle(Screen, gl_context, Singleton.currently_selected_color.outline1_ltwh, Singleton.currently_selected_color.outline1_thickness, Singleton.palette_moving_a_color_color if Singleton.palette_moving_a_color else Singleton.currently_selected_color.outline1_color, True, Singleton.currently_selected_color.color, True)
-        if mouse_is_on_edge_of_selected_palette_color:
+        if Singleton.editor_enabled and mouse_is_on_edge_of_selected_palette_color:
             Cursor.add_cursor_this_frame('cursor_nesw')
-            if Keys.editor_primary.pressed:
+            if Keys.editor_primary.newly_pressed:
                 Singleton.palette_colors_before_move = deepcopy(Singleton.palette_colors)
                 Singleton.palette_index_before_move = Singleton.currently_selected_color.palette_index
                 Singleton.palette_moving_a_color = True
@@ -266,6 +275,13 @@ def update_palette(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys,
 
 def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
+    # editor is disabled
+    if not Singleton.editor_enabled:
+        Singleton.header_selected = False
+        Singleton.header_which_selected = [False for _ in Singleton.header_which_selected]
+        Singleton.header_string_selected = ''
+        Singleton.header_index_selected = -1
+    #
     # header banner
     header_ltwh = (0, 0, Screen.width, Singleton.header_height)
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', header_ltwh, Singleton.header_background_color)
@@ -274,7 +290,7 @@ def update_header(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
     # header options
     already_highlighted_an_option = False
     for index, string, left, hover_ltwh in zip(Singleton.header_indexes, Singleton.header_options.keys(), Singleton.header_strings_lefts, Singleton.header_hover_ltwh):
-        if not already_highlighted_an_option:
+        if Singleton.editor_enabled and not already_highlighted_an_option:
             if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, hover_ltwh):
                 already_highlighted_an_option = True
                 if Keys.editor_primary.newly_pressed or Singleton.header_selected:
@@ -317,6 +333,12 @@ def update_footer(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, 
 
 def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
+    # editor is disabled
+    if not Singleton.editor_enabled:
+        Singleton.add_color_circle_is_held = False
+        Singleton.add_color_saturation_circle_is_held = False
+        Singleton.add_color_alpha_circle_is_held = False
+    #
     # draw add color background
     Singleton.add_color_ltwh[1] = Singleton.footer_ltwh[1] - Singleton.add_color_ltwh[3]
     Render.basic_rect_ltwh_with_color_to_quad(Screen, gl_context, 'blank_pixel', Singleton.add_color_ltwh, Singleton.add_color_background_color)
@@ -332,7 +354,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     if not Singleton.currently_selected_color.selected_through_palette:
         Singleton.add_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
         Render.draw_string_of_characters(Screen, gl_context, Singleton.add_color_words, Singleton.add_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-        if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
+        if Singleton.editor_enabled and Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
             Singleton.palette_pressed_add_or_remove_button_this_frame = True
             Singleton.currently_selected_color.selected_through_palette = True
             if percent_to_rgba(Singleton.currently_selected_color.color) in [percent_to_rgba(color) for color in Singleton.palette_colors]:
@@ -361,7 +383,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         if Singleton.currently_selected_color.selected_through_palette:
             Singleton.remove_color_words_lt[1] = Singleton.add_color_words_background_ltwh[1] + Singleton.add_color_words_border_thickness + Singleton.add_color_words_padding
             Render.draw_string_of_characters(Screen, gl_context, Singleton.remove_color_words, Singleton.remove_color_words_lt, Singleton.add_color_words_text_pixel_size, Singleton.add_color_current_circle_color if Singleton.currently_selected_color.color[3] > 0.5 else COLORS['BLACK'])
-            if Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
+            if Singleton.editor_enabled and Keys.editor_primary.newly_pressed and point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_words_background_ltwh):
                 for _ in range(1):
                     Singleton.palette_pressed_add_or_remove_button_this_frame = True
                     del Singleton.palette_colors[Singleton.currently_selected_color.palette_index]
@@ -394,7 +416,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     color_spectrum_ltwh = Singleton.get_color_spectrum_ltwh()
     Render.rgba_picker(Screen, gl_context, 'black_pixel', color_spectrum_ltwh, Singleton.currently_selected_color.saturation)
     mouse_is_in_spectrum = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, color_spectrum_ltwh)
-    if mouse_is_in_spectrum:
+    if Singleton.editor_enabled and mouse_is_in_spectrum:
         Cursor.add_cursor_this_frame('cursor_eyedrop')
         if Keys.editor_primary.newly_pressed:
             Singleton.add_color_circle_is_held = True
@@ -425,7 +447,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Singleton.add_color_saturation_ltwh[1] = color_spectrum_ltwh[1] + color_spectrum_ltwh[3]
     Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_saturation_ltwh, Singleton.currently_selected_color.color_min_saturation, Singleton.currently_selected_color.color_max_saturation)
     mouse_is_in_saturation = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_saturation_ltwh)
-    if mouse_is_in_saturation:
+    if Singleton.editor_enabled and mouse_is_in_saturation:
         Cursor.add_cursor_this_frame('cursor_eyedrop')
         if Keys.editor_primary.newly_pressed and not Singleton.add_color_circle_is_held:
             Singleton.add_color_saturation_circle_is_held = True
@@ -454,7 +476,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     Render.checkerboard(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.add_color_alpha_checker_color1, Singleton.add_color_alpha_checker_color2, Singleton.add_color_alpha_checker_x, Singleton.add_color_alpha_checker_y)
     Render.spectrum_x(Screen, gl_context, 'black_pixel', Singleton.add_color_alpha_ltwh, Singleton.currently_selected_color.color_no_alpha, Singleton.currently_selected_color.color_max_alpha)
     mouse_is_in_alpha = point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, Singleton.add_color_alpha_ltwh)
-    if mouse_is_in_alpha:
+    if Singleton.editor_enabled and mouse_is_in_alpha:
         Cursor.add_cursor_this_frame('cursor_eyedrop')
         if Keys.editor_primary.newly_pressed and not Singleton.add_color_saturation_circle_is_held:
             Singleton.add_color_alpha_circle_is_held = True
@@ -494,13 +516,13 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     # manage tab / shift tab
     initial_move_down = (Keys.editor_tab.newly_pressed and not Keys.editor_shift.pressed)
     initial_move_up = (Keys.editor_tab.newly_pressed and Keys.editor_shift.newly_pressed) or (Keys.editor_tab.newly_pressed and Keys.editor_shift.pressed) or (Keys.editor_tab.pressed and Keys.editor_shift.newly_pressed)
-    if initial_move_down or initial_move_up:
+    if (initial_move_down or initial_move_up):
         Singleton.add_color_input_moving_down = True if initial_move_down else False
         Singleton.add_color_input_initial_fast_move = get_time()
     if Keys.editor_tab.pressed:
         current_time = get_time()
         moving_this_frame = (initial_move_down or initial_move_up or ((current_time - Singleton.add_color_input_initial_fast_move > Singleton.add_color_input_time_before_fast_move) and (current_time - Singleton.add_color_input_last_move_time > Singleton.add_color_input_time_between_moves)))
-        if moving_this_frame:
+        if Singleton.editor_enabled and moving_this_frame:
             Singleton.add_color_input_last_move_time = get_time()
             old_selected_index = -1
             for index, text_input in enumerate(Singleton.add_color_dynamic_inputs):
@@ -527,7 +549,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
         Render.draw_string_of_characters(Screen, gl_context, input_character, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Render.draw_string_of_characters(Screen, gl_context, '=', [Singleton.add_color_input_color_equals_input_left[1], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
         Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y)
+        Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y, enabled=Singleton.editor_enabled)
         if not attempt_to_update_selected_color:
             attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
             if attempt_to_update_selected_color:
@@ -537,7 +559,7 @@ def update_add_color(Singleton, Api, PATH, Screen, gl_context, Render, Time, Key
     index, characters = 4, Singleton.add_color_inputs[4]
     Render.draw_string_of_characters(Screen, gl_context, characters, [Singleton.add_color_input_color_equals_input_left[0], current_character_top], Singleton.add_color_input_text_pixel_size, Singleton.add_color_input_inputs_and_equals_color)
     Singleton.add_color_dynamic_inputs[index].background_ltwh[1] = current_character_top
-    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y)
+    Singleton.add_color_dynamic_inputs[index].update(Screen, gl_context, Keys, Render, Cursor, offset_y=text_offset_y, enabled=Singleton.editor_enabled)
     if not attempt_to_update_selected_color:
         attempt_to_update_selected_color = Singleton.add_color_dynamic_inputs[index].should_update_spectrum
         if attempt_to_update_selected_color:
@@ -611,6 +633,10 @@ def update_separate_palette_and_add_color(Singleton, Api, PATH, Screen, gl_conte
 
 def update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
     #
+    # editor is disabled
+    if not Singleton.editor_enabled:
+        pass
+    #
     # draw bool bar background
     Singleton.tool_bar_ltwh[0] = Screen.width - Singleton.tool_bar_ltwh[2]
     Singleton.tool_bar_ltwh[3] = Singleton.footer_ltwh[1] - Singleton.header_bottom
@@ -623,7 +649,7 @@ def update_tools(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, C
         if tool_attributes[1] and not drawn_glowing_tool_this_frame:
             Render.basic_outline_ltwh(Screen, gl_context, tool_name, tool_attributes[0], Singleton.tool_bar_glow_color, Singleton.tool_bar_outline_pixels)
             drawn_glowing_tool_this_frame = True
-        if Keys.editor_primary.newly_pressed:
+        if Singleton.editor_enabled and Keys.editor_primary.newly_pressed:
             if point_is_in_ltwh(Keys.cursor_x_pos.value, Keys.cursor_y_pos.value, tool_attributes[0]):
                 Singleton.tool_bar_tools_dict = {key: [value[0], False if key != tool_name else True] for key, value in Singleton.tool_bar_tools_dict.items()}
         Render.basic_rect_ltwh_to_quad(Screen, gl_context, tool_name, tool_attributes[0])

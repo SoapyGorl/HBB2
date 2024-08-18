@@ -1,9 +1,18 @@
+import os
 import math
 from __main__ import PATH
 import time
 
 
 OFF_SCREEN = -99999
+
+
+def path_exists(path):
+    return os.path.exists(path)
+
+
+def create_folder(path):
+    os.makedirs(path)
 
 
 def str_can_be_int(string):

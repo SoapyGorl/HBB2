@@ -8,6 +8,7 @@ from Code.Editor.editor_utilities import TextInput, CurrentlySelectedColor, Head
 
 class EditorSingleton():
     def __init__(self, Render):
+        self.editor_enabled = True
         self.border_color = COLORS['BLACK']
         #
         # header
@@ -43,7 +44,8 @@ class EditorSingleton():
         self.header_manager_border_thickness = 3
         self.header_options = {
             'File': HeaderManager(Render,
-                                  option_names_and_responses={'New level': lambda: print('a'),
+                                  option_names_and_responses={'New project': lambda: print('a'),
+                                                              'New level': lambda: print('a'),
                                                               'Save level': lambda: print('b'),
                                                               'Main menu': lambda: print('c'),
                                                               'Exit game': lambda: print('d'),},
@@ -234,7 +236,6 @@ def update_image(Singleton, Api, PATH, Screen, gl_context, Render, Time, Keys, C
     # update scroll bars
     #
     # update image section ltwh
-
 
 
 def editor_loop(Api, PATH, Screen, gl_context, Render, Time, Keys, Cursor):
